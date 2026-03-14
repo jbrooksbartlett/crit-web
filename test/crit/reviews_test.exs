@@ -1,0 +1,479 @@
+defmodule Crit.ReviewsTest do
+  use Crit.DataCase, async: true
+
+  alias Crit.{Repo, Review, Reviews}
+
+  import Crit.ReviewsFixtures
+
+  describe "create_review/3" do
+    test "creates a review with files" do
+      files = [%{"path" => "test.md", "content" => "# Hello"}]
+      {:ok, review} = Reviews.create_review(files, 0, [])
+
+      review = Reviews.get_by_token(review.token)
+      assert review.review_round == 0
+      assert review.token != nil
+      assert review.delete_token != nil
+      assert length(review.files) == 1
+      assert hd(review.files).file_path == "test.md"
+      assert hd(review.files).content == "# Hello"
+    end
+
+    test "creates a review with seed comments" do
+      files = [%{"path" => "test.md", "content" => "# Hello"}]
+
+      comments = [
+        %{"file" => "test.md", "start_line" => 1, "end_line" => 2, "body" => "First comment"},
+        %{"file" => "test.md", "start_line" => 3, "end_line" => 3, "body" => "Second comment"}
+      ]
+
+      {:ok, review} = Reviews.create_review(files, 1, comments)
+
+      loaded = Reviews.list_comments(review)
+      assert length(loaded) == 2
+      assert Enum.all?(loaded, &(&1.author_identity == "imported"))
+    end
+
+    test "returns error for file with invalid content (missing content)" do
+      files = [%{"path" => "a.go"}]
+      assert {:error, %Ecto.Changeset{}} = Reviews.create_review(files, 0, [])
+    end
+
+    test "returns error when total size exceeds 10 MB" do
+      big_content = String.duplicate("x", 5_500_000)
+
+      files = [
+        %{"path" => "a.go", "content" => big_content},
+        %{"path" => "b.go", "content" => big_content}
+      ]
+
+      assert {:error, :total_size_exceeded} = Reviews.create_review(files, 0, [])
+    end
+
+    test "creates review with multiple files and per-file comments" do
+      files = [
+        %{"path" => "src/main.go", "content" => "package main"},
+        %{"path" => "src/util.go", "content" => "package util"}
+      ]
+
+      comments = [
+        %{"file" => "src/main.go", "start_line" => 1, "end_line" => 1, "body" => "rename this"},
+        %{"file" => "src/util.go", "start_line" => 1, "end_line" => 1, "body" => "nice"}
+      ]
+
+      assert {:ok, review} = Reviews.create_review(files, 1, comments)
+      assert review.token
+      assert review.delete_token
+
+      review = Reviews.get_by_token(review.token)
+      assert length(review.files) == 2
+
+      assert Enum.map(review.files, & &1.file_path) |> Enum.sort() == [
+               "src/main.go",
+               "src/util.go"
+             ]
+
+      assert length(review.comments) == 2
+
+      main_comment = Enum.find(review.comments, &(&1.file_path == "src/main.go"))
+      assert main_comment.body == "rename this"
+
+      util_comment = Enum.find(review.comments, &(&1.file_path == "src/util.go"))
+      assert util_comment.body == "nice"
+    end
+
+    test "files are ordered by position" do
+      files = [
+        %{"path" => "z.go", "content" => "z"},
+        %{"path" => "a.go", "content" => "a"}
+      ]
+
+      {:ok, review} = Reviews.create_review(files, 0, [])
+      review = Reviews.get_by_token(review.token)
+
+      assert Enum.map(review.files, & &1.file_path) == ["z.go", "a.go"]
+    end
+
+    test "comments referencing non-existent files are still inserted" do
+      files = [%{"path" => "a.go", "content" => "a"}]
+
+      comments = [
+        %{"file" => "nonexistent.go", "start_line" => 1, "end_line" => 1, "body" => "orphan"}
+      ]
+
+      {:ok, review} = Reviews.create_review(files, 0, comments)
+      review = Reviews.get_by_token(review.token)
+
+      assert length(review.comments) == 1
+      assert hd(review.comments).file_path == "nonexistent.go"
+    end
+  end
+
+  describe "get_by_token/1" do
+    test "returns review with preloaded comments" do
+      review = review_fixture()
+      _comment = comment_fixture(review)
+
+      found = Reviews.get_by_token(review.token)
+
+      assert found.id == review.id
+      assert Ecto.assoc_loaded?(found.comments)
+      assert length(found.comments) == 1
+    end
+
+    test "returns nil for unknown token" do
+      assert Reviews.get_by_token("nonexistent-token") == nil
+    end
+
+    test "preloads files in position order" do
+      files = [
+        %{"path" => "c.go", "content" => "c"},
+        %{"path" => "a.go", "content" => "a"},
+        %{"path" => "b.go", "content" => "b"}
+      ]
+
+      {:ok, review} = Reviews.create_review(files, 0, [])
+      found = Reviews.get_by_token(review.token)
+
+      assert Ecto.assoc_loaded?(found.files)
+      assert Enum.map(found.files, & &1.file_path) == ["c.go", "a.go", "b.go"]
+    end
+  end
+
+  describe "delete_by_delete_token/1" do
+    test "deletes an existing review" do
+      review = review_fixture()
+
+      assert :ok = Reviews.delete_by_delete_token(review.delete_token)
+      assert Repo.get(Review, review.id) == nil
+    end
+
+    test "returns error for unknown token" do
+      assert {:error, :not_found} = Reviews.delete_by_delete_token("nonexistent")
+    end
+  end
+
+  describe "create_comment/4" do
+    test "creates a comment with identity" do
+      review = review_fixture()
+      identity = Ecto.UUID.generate()
+
+      {:ok, comment} =
+        Reviews.create_comment(
+          review,
+          %{"start_line" => 1, "end_line" => 2, "body" => "Nice!"},
+          identity
+        )
+
+      assert comment.body == "Nice!"
+      assert comment.start_line == 1
+      assert comment.end_line == 2
+      assert comment.author_identity == identity
+      assert comment.author_display_name == nil
+    end
+
+    test "creates a comment with display_name" do
+      review = review_fixture()
+      identity = Ecto.UUID.generate()
+
+      {:ok, comment} =
+        Reviews.create_comment(
+          review,
+          %{"start_line" => 1, "end_line" => 1, "body" => "Good"},
+          identity,
+          "Alice"
+        )
+
+      assert comment.author_display_name == "Alice"
+    end
+  end
+
+  describe "create_comment/5 with file_path" do
+    test "creates comment with file_path" do
+      {:ok, review} =
+        Reviews.create_review(
+          [%{"path" => "a.go", "content" => "a"}],
+          0,
+          []
+        )
+
+      {:ok, comment} =
+        Reviews.create_comment(
+          review,
+          %{"start_line" => 1, "end_line" => 1, "body" => "hi"},
+          "identity1",
+          nil,
+          "a.go"
+        )
+
+      assert comment.file_path == "a.go"
+    end
+
+    test "comment without file_path has nil file_path" do
+      review = review_fixture()
+
+      {:ok, comment} =
+        Reviews.create_comment(
+          review,
+          %{"start_line" => 1, "end_line" => 1, "body" => "hi"},
+          "identity1"
+        )
+
+      assert comment.file_path == nil
+    end
+  end
+
+  describe "update_comment/3" do
+    test "updates when identity matches" do
+      review = review_fixture()
+      identity = Ecto.UUID.generate()
+
+      {:ok, comment} =
+        Reviews.create_comment(
+          review,
+          %{"start_line" => 1, "end_line" => 1, "body" => "Original"},
+          identity
+        )
+
+      {:ok, updated} = Reviews.update_comment(comment.id, "Updated body", identity)
+
+      assert updated.body == "Updated body"
+    end
+
+    test "rejects update when identity does not match" do
+      review = review_fixture()
+      author_identity = Ecto.UUID.generate()
+
+      {:ok, comment} =
+        Reviews.create_comment(
+          review,
+          %{"start_line" => 1, "end_line" => 1, "body" => "Original"},
+          author_identity
+        )
+
+      assert {:error, :unauthorized} = Reviews.update_comment(comment.id, "Hacked", "other-id")
+    end
+  end
+
+  describe "delete_comment/2" do
+    test "deletes when identity matches" do
+      review = review_fixture()
+      identity = Ecto.UUID.generate()
+
+      {:ok, comment} =
+        Reviews.create_comment(
+          review,
+          %{"start_line" => 1, "end_line" => 1, "body" => "To delete"},
+          identity
+        )
+
+      {:ok, _deleted} = Reviews.delete_comment(comment.id, identity)
+
+      assert Reviews.list_comments(review) == []
+    end
+
+    test "rejects deletion when identity does not match" do
+      review = review_fixture()
+      author_identity = Ecto.UUID.generate()
+
+      {:ok, comment} =
+        Reviews.create_comment(
+          review,
+          %{"start_line" => 1, "end_line" => 1, "body" => "Protected"},
+          author_identity
+        )
+
+      assert {:error, :unauthorized} = Reviews.delete_comment(comment.id, "other-id")
+    end
+  end
+
+  describe "list_comments/1" do
+    test "returns comments ordered by start_line" do
+      review = review_fixture()
+
+      comment_fixture(review, %{"start_line" => 5, "end_line" => 5})
+      comment_fixture(review, %{"start_line" => 1, "end_line" => 1})
+      comment_fixture(review, %{"start_line" => 3, "end_line" => 3})
+
+      comments = Reviews.list_comments(review)
+      lines = Enum.map(comments, & &1.start_line)
+
+      assert lines == [1, 3, 5]
+    end
+  end
+
+  describe "touch_last_activity/1" do
+    test "updates timestamp when stale (>1 hour)" do
+      review = review_fixture()
+
+      old_time = DateTime.utc_now() |> DateTime.add(-7200, :second) |> DateTime.truncate(:second)
+
+      review
+      |> Ecto.Changeset.change(last_activity_at: old_time)
+      |> Repo.update!()
+
+      review = Repo.get!(Review, review.id)
+
+      Reviews.touch_last_activity(review)
+
+      refreshed = Repo.get!(Review, review.id)
+      assert DateTime.diff(refreshed.last_activity_at, old_time) > 0
+    end
+
+    test "does not update timestamp when fresh (<1 hour)" do
+      review = review_fixture()
+
+      before = Repo.get!(Review, review.id)
+      Reviews.touch_last_activity(before)
+      after_touch = Repo.get!(Review, review.id)
+
+      assert DateTime.diff(after_touch.last_activity_at, before.last_activity_at) == 0
+    end
+  end
+
+  describe "dashboard_stats/0" do
+    test "returns zeroes when no reviews exist" do
+      stats = Reviews.dashboard_stats()
+
+      assert stats.total_reviews == 0
+      assert stats.total_comments == 0
+      assert stats.total_files == 0
+      assert stats.reviews_this_week == 0
+      assert stats.avg_comments_per_review == 0.0
+      assert stats.total_storage_bytes == 0
+    end
+
+    test "counts reviews, comments, files, and storage" do
+      review = review_fixture()
+      comment_fixture(review)
+      comment_fixture(review, %{"start_line" => 2, "end_line" => 2, "body" => "Second"})
+
+      stats = Reviews.dashboard_stats()
+
+      assert stats.total_reviews == 1
+      assert stats.total_comments == 2
+      assert stats.total_files == 1
+      assert stats.reviews_this_week == 1
+      assert stats.avg_comments_per_review == 2.0
+      assert stats.total_storage_bytes > 0
+    end
+
+    test "counts multiple reviews correctly" do
+      r1 = review_fixture()
+      comment_fixture(r1)
+
+      _r2 =
+        review_fixture(%{
+          files: [
+            %{"path" => "a.go", "content" => "package a"},
+            %{"path" => "b.go", "content" => "package b"}
+          ]
+        })
+
+      stats = Reviews.dashboard_stats()
+
+      assert stats.total_reviews == 2
+      assert stats.total_comments == 1
+      assert stats.total_files == 3
+      assert stats.avg_comments_per_review == 0.5
+    end
+  end
+
+  describe "activity_chart/1" do
+    test "returns 30 days of data with zero-fill" do
+      data = Reviews.activity_chart(30)
+
+      assert length(data) == 30
+      assert Enum.all?(data, fn {date, count} -> is_struct(date, Date) and is_integer(count) end)
+    end
+
+    test "counts reviews created today" do
+      _review = review_fixture()
+
+      data = Reviews.activity_chart(30)
+      {_date, today_count} = List.last(data)
+
+      assert today_count == 1
+    end
+
+    test "returns empty counts when no reviews" do
+      data = Reviews.activity_chart(7)
+
+      assert length(data) == 7
+      assert Enum.all?(data, fn {_date, count} -> count == 0 end)
+    end
+  end
+
+  describe "list_reviews_with_counts/0" do
+    test "returns empty list when no reviews" do
+      assert Reviews.list_reviews_with_counts() == []
+    end
+
+    test "returns reviews with counts and first file path" do
+      review = review_fixture()
+      comment_fixture(review)
+
+      [result] = Reviews.list_reviews_with_counts()
+
+      assert result.token == review.token
+      assert result.first_file_path == "test.md"
+      assert result.comment_count == 1
+      assert result.file_count == 1
+      assert result.id == review.id
+      assert %DateTime{} = result.last_activity_at
+      refute Map.has_key?(result, :delete_token)
+    end
+
+    test "sorts by last_activity_at descending" do
+      r1 = review_fixture()
+      r2 = review_fixture(%{files: [%{"path" => "second.md", "content" => "# Second"}]})
+
+      old_time = DateTime.utc_now() |> DateTime.add(-3600, :second) |> DateTime.truncate(:second)
+
+      r1
+      |> Ecto.Changeset.change(last_activity_at: old_time)
+      |> Repo.update!()
+
+      results = Reviews.list_reviews_with_counts()
+
+      assert length(results) == 2
+      assert hd(results).token == r2.token
+    end
+
+    test "returns correct counts for multi-file review with comments" do
+      {:ok, review} =
+        Reviews.create_review(
+          [
+            %{"path" => "a.go", "content" => "package a"},
+            %{"path" => "b.go", "content" => "package b"}
+          ],
+          0,
+          [
+            %{"file" => "a.go", "start_line" => 1, "end_line" => 1, "body" => "c1"},
+            %{"file" => "a.go", "start_line" => 2, "end_line" => 2, "body" => "c2"},
+            %{"file" => "b.go", "start_line" => 1, "end_line" => 1, "body" => "c3"}
+          ]
+        )
+
+      [result] = Reviews.list_reviews_with_counts()
+
+      assert result.token == review.token
+      assert result.comment_count == 3
+      assert result.file_count == 2
+      assert result.first_file_path == "a.go"
+    end
+  end
+
+  describe "delete_review/1" do
+    test "deletes a review by id" do
+      review = review_fixture()
+
+      assert :ok = Reviews.delete_review(review.id)
+      assert Repo.get(Review, review.id) == nil
+    end
+
+    test "returns error for unknown id" do
+      assert {:error, :not_found} = Reviews.delete_review(Ecto.UUID.generate())
+    end
+  end
+end

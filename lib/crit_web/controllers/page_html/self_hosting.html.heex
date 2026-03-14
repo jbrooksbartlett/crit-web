@@ -1,0 +1,158 @@
+<div class="min-h-screen bg-(--crit-bg-primary) text-(--crit-fg-primary) font-sans antialiased">
+  <Layouts.site_header />
+  <div class="max-w-[1100px] mx-auto px-10 pb-15 max-sm:px-5 max-sm:pb-10">
+    <main class="mt-12">
+      <h1 class="text-3xl font-bold tracking-tight mb-2">Self-Hosting</h1>
+      <p class="text-sm text-(--crit-fg-muted) mb-4">Run your own instance of Crit Web</p>
+
+      <div class="border border-(--crit-accent) rounded-lg bg-(--crit-accent-subtle) px-5 py-4 mb-10">
+        <p class="text-sm font-semibold text-(--crit-accent) mb-1">Coming Soon</p>
+        <p class="text-sm text-(--crit-fg-secondary) leading-relaxed">
+          Self-hosting support is not yet available. The documentation below is a preview of what's planned.
+        </p>
+      </div>
+
+      <h2 class="text-base font-semibold mt-8 mb-2">Prerequisites</h2>
+      <ul class="text-sm leading-relaxed text-(--crit-fg-secondary) pl-5 mt-2">
+        <li class="mb-1">Docker (with Compose)</li>
+        <li class="mb-1">PostgreSQL 17 (or use the bundled one in docker-compose)</li>
+      </ul>
+
+      <h2 class="text-base font-semibold mt-8 mb-2">Quick start with Docker Compose</h2>
+      <p class="text-sm leading-relaxed text-(--crit-fg-secondary)">
+        Clone the repository and start the services:
+      </p>
+      <pre class="text-sm bg-(--crit-bg-tertiary) rounded-lg p-4 mt-3 overflow-x-auto"><code>git clone https://github.com/tomasz-tomczyk/crit-web.git
+cd crit-web
+docker compose up -d</code></pre>
+      <p class="text-sm leading-relaxed text-(--crit-fg-secondary) mt-3">
+        Before starting, generate a secret key and update <code class="text-[0.9em] bg-(--crit-bg-tertiary) px-1 py-0.5 rounded">docker-compose.yml</code>:
+      </p>
+      <pre class="text-sm bg-(--crit-bg-tertiary) rounded-lg p-4 mt-3 overflow-x-auto"><code>docker run --rm ghcr.io/tomasz-tomczyk/crit-web:latest \
+  /app/bin/crit eval "IO.puts(:crypto.strong_rand_bytes(64) |> Base.encode64)"</code></pre>
+      <p class="text-sm leading-relaxed text-(--crit-fg-secondary) mt-3">
+        Replace
+        <code class="text-[0.9em] bg-(--crit-bg-tertiary) px-1 py-0.5 rounded">
+          generate-a-secret-see-readme
+        </code>
+        in
+        <code class="text-[0.9em] bg-(--crit-bg-tertiary) px-1 py-0.5 rounded">
+          docker-compose.yml
+        </code>
+        with the generated value.
+        Update
+        <code class="text-[0.9em] bg-(--crit-bg-tertiary) px-1 py-0.5 rounded">PHX_HOST</code>
+        if serving on a real domain.
+      </p>
+
+      <h2 class="text-base font-semibold mt-8 mb-2">Environment Variables</h2>
+      <div class="overflow-x-auto mt-3">
+        <table class="w-full text-sm">
+          <thead>
+            <tr class="border-b border-(--crit-border-primary)">
+              <th class="text-left py-2 pr-4 font-semibold">Variable</th>
+              <th class="text-left py-2 pr-4 font-semibold">Required</th>
+              <th class="text-left py-2 font-semibold">Description</th>
+            </tr>
+          </thead>
+          <tbody class="text-(--crit-fg-secondary)">
+            <tr class="border-b border-(--crit-border-primary)">
+              <td class="py-2 pr-4">
+                <code class="text-[0.9em] bg-(--crit-bg-tertiary) px-1 py-0.5 rounded">
+                  DATABASE_URL
+                </code>
+              </td>
+              <td class="py-2 pr-4">Yes</td>
+              <td class="py-2">PostgreSQL connection URL</td>
+            </tr>
+            <tr class="border-b border-(--crit-border-primary)">
+              <td class="py-2 pr-4">
+                <code class="text-[0.9em] bg-(--crit-bg-tertiary) px-1 py-0.5 rounded">
+                  SECRET_KEY_BASE
+                </code>
+              </td>
+              <td class="py-2 pr-4">Yes</td>
+              <td class="py-2">64+ byte secret for signing cookies</td>
+            </tr>
+            <tr class="border-b border-(--crit-border-primary)">
+              <td class="py-2 pr-4">
+                <code class="text-[0.9em] bg-(--crit-bg-tertiary) px-1 py-0.5 rounded">
+                  PHX_HOST
+                </code>
+              </td>
+              <td class="py-2 pr-4">Yes</td>
+              <td class="py-2">Hostname where crit-web is served</td>
+            </tr>
+            <tr class="border-b border-(--crit-border-primary)">
+              <td class="py-2 pr-4">
+                <code class="text-[0.9em] bg-(--crit-bg-tertiary) px-1 py-0.5 rounded">
+                  PHX_SERVER
+                </code>
+              </td>
+              <td class="py-2 pr-4">Yes</td>
+              <td class="py-2">
+                Set to <code class="text-[0.9em]">true</code> to start the web server
+              </td>
+            </tr>
+            <tr>
+              <td class="py-2 pr-4">
+                <code class="text-[0.9em] bg-(--crit-bg-tertiary) px-1 py-0.5 rounded">PORT</code>
+              </td>
+              <td class="py-2 pr-4">No</td>
+              <td class="py-2">HTTP port (default: 4000)</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <h2 class="text-base font-semibold mt-8 mb-2">Running with your own Postgres</h2>
+      <p class="text-sm leading-relaxed text-(--crit-fg-secondary)">
+        If you already have a PostgreSQL instance, skip the
+        <code class="text-[0.9em] bg-(--crit-bg-tertiary) px-1 py-0.5 rounded">db</code>
+        service
+        and run the app container directly:
+      </p>
+      <pre class="text-sm bg-(--crit-bg-tertiary) rounded-lg p-4 mt-3 overflow-x-auto"><code>docker run -d \
+  --name crit-web \
+  --restart unless-stopped \
+  -e DATABASE_URL="postgres://user:pass@your-host:5432/crit" \
+  -e SECRET_KEY_BASE="your-generated-secret" \
+  -e PHX_HOST="crit.example.com" \
+  -e PHX_SERVER=true \
+  -e PORT=4000 \
+  -p 4000:4000 \
+  ghcr.io/tomasz-tomczyk/crit-web:latest \
+  sh -c "/app/bin/migrate && /app/bin/server"</code></pre>
+
+      <h2 class="text-base font-semibold mt-8 mb-2">Updating</h2>
+      <p class="text-sm leading-relaxed text-(--crit-fg-secondary)">
+        Pull the latest image and restart:
+      </p>
+      <pre class="text-sm bg-(--crit-bg-tertiary) rounded-lg p-4 mt-3 overflow-x-auto"><code>docker compose pull
+docker compose up -d</code></pre>
+
+      <h2 class="text-base font-semibold mt-8 mb-2">Docker image</h2>
+      <p class="text-sm leading-relaxed text-(--crit-fg-secondary)">
+        Images are published to <a
+          href="https://github.com/tomasz-tomczyk/crit-web/pkgs/container/crit-web"
+          class="underline hover:text-(--crit-fg-primary)"
+        >GitHub Container Registry</a>.
+        Available tags:
+      </p>
+      <ul class="text-sm leading-relaxed text-(--crit-fg-secondary) pl-5 mt-2">
+        <li class="mb-1">
+          <code class="text-[0.9em] bg-(--crit-bg-tertiary) px-1 py-0.5 rounded">latest</code>
+          — latest stable release
+        </li>
+        <li class="mb-1">
+          <code class="text-[0.9em] bg-(--crit-bg-tertiary) px-1 py-0.5 rounded">main</code>
+          — bleeding edge (built from main branch)
+        </li>
+        <li class="mb-1">
+          <code class="text-[0.9em] bg-(--crit-bg-tertiary) px-1 py-0.5 rounded">1.2.3</code>
+          — specific version
+        </li>
+      </ul>
+    </main>
+  </div>
+</div>

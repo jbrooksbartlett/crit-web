@@ -1,0 +1,40 @@
+[tools]
+erlang = "28.1"
+elixir = "1.19.5-otp-28"
+
+[env]
+PORT = "4000"
+DB_NAME = "crit_dev"
+DB_PORT = "5432"
+DB_USER = "postgres"
+DB_PASSWORD = "postgres"
+DB_HOST = "localhost"
+
+# Worktree config
+WT_COPY_DIRS = "deps _build"
+
+[tasks.deps]
+description = "Install Elixir dependencies"
+run = "mix deps.get"
+
+[tasks."db:setup"]
+description = "Create and migrate database"
+depends = ["deps"]
+run = [
+  "mix ecto.create 2>/dev/null || true",
+  "mix ecto.migrate"
+]
+
+[tasks.up]
+description = "Start everything"
+depends = ["deps", "db:setup"]
+run = "iex -S mix phx.server"
+raw = true
+
+[tasks.down]
+description = "Stop services"
+run = "echo 'nothing to stop'"
+
+[tasks.setup]
+description = "Install deps and setup DB (no server)"
+depends = ["deps", "db:setup"]

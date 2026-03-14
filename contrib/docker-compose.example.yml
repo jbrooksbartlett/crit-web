@@ -1,0 +1,50 @@
+# Example docker-compose for running crit-web with PostgreSQL.
+# Copy this file and .env.example to get started:
+#
+#   cp contrib/docker-compose.example.yml docker-compose.yml
+#   cp .env.example .env
+#   # Edit .env — at minimum, set SECRET_KEY_BASE
+#   docker compose up -d
+#
+# If you already have PostgreSQL, just use `docker run` instead.
+# See README.md for details.
+
+services:
+  db:
+    image: postgres:17-alpine
+    restart: unless-stopped
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: crit_prod
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  app:
+    image: ghcr.io/tomasz-tomczyk/crit-web:latest
+    restart: unless-stopped
+    depends_on:
+      db:
+        condition: service_healthy
+    ports:
+      - "${PORT:-4000}:${PORT:-4000}"
+    environment:
+      DATABASE_URL: ecto://postgres:postgres@db/crit_prod
+      SECRET_KEY_BASE: ${SECRET_KEY_BASE}
+      PHX_HOST: ${PHX_HOST:-localhost}
+      PORT: ${PORT:-4000}
+      PHX_SERVER: "true"
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:${PORT:-4000}/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+
+volumes:
+  pgdata:

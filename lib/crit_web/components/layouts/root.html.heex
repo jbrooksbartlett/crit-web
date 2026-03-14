@@ -1,0 +1,142 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="csrf-token" content={get_csrf_token()} />
+    <meta
+      name="description"
+      content={
+        assigns[:meta_description] ||
+          "Review AI-generated plans before implementation. Inline comments, multi-round diffs, and a structured feedback loop for any AI coding agent."
+      }
+    />
+    <meta
+      name="keywords"
+      content="code review, AI plan review, inline comments, markdown review, AI coding agent, Claude Code, Cursor, plan-then-code"
+    />
+    <%= if assigns[:noindex] do %>
+      <meta name="robots" content="noindex, nofollow" />
+    <% end %>
+
+    <meta property="og:type" content={assigns[:og_type] || "website"} />
+    <meta property="og:site_name" content="Crit" />
+    <meta
+      property="og:title"
+      content={assigns[:page_title] || "Crit — Review AI plans before they become code"}
+    />
+    <meta
+      property="og:description"
+      content={
+        assigns[:meta_description] ||
+          "Review AI-generated plans before implementation. Inline comments, multi-round diffs, and a structured feedback loop for any AI coding agent."
+      }
+    />
+    <meta property="og:url" content={assigns[:og_url] || "https://crit.live"} />
+
+    <meta name="twitter:card" content="summary" />
+    <meta
+      name="twitter:title"
+      content={assigns[:page_title] || "Crit — Review AI plans before they become code"}
+    />
+    <meta
+      name="twitter:description"
+      content={
+        assigns[:meta_description] ||
+          "Review AI-generated plans before implementation. Inline comments, multi-round diffs, and a structured feedback loop for any AI coding agent."
+      }
+    />
+
+    <.live_title default="Crit — Review AI plans before they become code">
+      {assigns[:page_title]}
+    </.live_title>
+    <link phx-track-static rel="stylesheet" href={~p"/assets/css/app.css"} />
+    <script defer phx-track-static type="text/javascript" src={~p"/assets/js/app.js"}>
+    </script>
+    <script>
+      (() => {
+        const setTheme = (theme) => {
+          if (theme === "system") {
+            localStorage.removeItem("phx:theme");
+            document.documentElement.removeAttribute("data-theme");
+          } else {
+            localStorage.setItem("phx:theme", theme);
+            document.documentElement.setAttribute("data-theme", theme);
+          }
+          document.querySelectorAll('[data-phx-theme]').forEach(function(btn) {
+            btn.setAttribute('aria-checked', btn.dataset.phxTheme === theme ? 'true' : 'false');
+          });
+        };
+        if (!document.documentElement.hasAttribute("data-theme")) {
+          setTheme(localStorage.getItem("phx:theme") || "system");
+        }
+        window.addEventListener("storage", (e) => e.key === "phx:theme" && setTheme(e.newValue || "system"));
+
+        window.addEventListener("phx:set-theme", (e) => setTheme(e.target.dataset.phxTheme));
+      })();
+    </script>
+  </head>
+  <body>
+    {@inner_content}
+    <footer class="border-t border-[var(--crit-border)] bg-[var(--crit-bg-secondary)] relative overflow-hidden">
+      <div
+        class="absolute top-0 left-0 right-0 h-px"
+        style="background: linear-gradient(90deg, transparent 0%, var(--crit-accent) 50%, transparent 100%); opacity: 0.35;"
+      >
+      </div>
+      <div class="max-w-[920px] mx-auto px-10 py-8 max-sm:px-5 max-sm:py-6">
+        <div class="flex items-start justify-between gap-8 max-sm:flex-col max-sm:gap-5">
+          <div class="flex flex-col gap-2">
+            <a
+              href={~p"/"}
+              class="font-mono text-base font-bold text-[var(--crit-accent)] tracking-tight no-underline hover:text-[var(--crit-accent-hover)] transition-colors"
+            >
+              Crit
+            </a>
+            <p class="text-xs text-[var(--crit-fg-muted)] leading-relaxed max-w-[280px]">
+              Review AI plans before they become code. Local-first, no login required.
+            </p>
+          </div>
+          <div class="flex items-center gap-3 text-xs pt-0.5">
+            <a
+              href="https://github.com/tomasz-tomczyk/crit"
+              class="text-[var(--crit-fg-muted)] no-underline hover:text-[var(--crit-fg-primary)] transition-colors flex items-center gap-1.5"
+              aria-label="GitHub"
+            >
+              <svg viewBox="0 0 16 16" class="size-3.5 fill-current" aria-hidden="true">
+                <path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.013 8.013 0 0016 8c0-4.42-3.58-8-8-8z" />
+              </svg>
+              GitHub
+            </a>
+            <span class="text-[var(--crit-fg-dimmed)]">/</span>
+            <a
+              href={~p"/terms"}
+              class="text-[var(--crit-fg-muted)] no-underline hover:text-[var(--crit-fg-primary)] transition-colors"
+            >
+              Terms of Service
+            </a>
+            <span class="text-[var(--crit-fg-dimmed)]">/</span>
+            <a
+              href={~p"/privacy"}
+              class="text-[var(--crit-fg-muted)] no-underline hover:text-[var(--crit-fg-primary)] transition-colors"
+            >
+              Privacy Policy
+            </a>
+          </div>
+        </div>
+        <div class="mt-6 pt-5 border-t border-[var(--crit-border)] flex items-center justify-between max-sm:flex-col max-sm:gap-1.5 max-sm:items-start">
+          <span class="font-mono text-xs text-[var(--crit-fg-muted)]">
+            Created by
+            <a
+              href="https://github.com/tomasz-tomczyk"
+              class="text-[var(--crit-accent)] no-underline hover:text-[var(--crit-accent-hover)] transition-colors"
+            >
+              Tomasz Tomczyk
+            </a>
+          </span>
+          <span class="font-mono text-xs text-[var(--crit-fg-dimmed)]">MIT License</span>
+        </div>
+      </div>
+    </footer>
+  </body>
+</html>

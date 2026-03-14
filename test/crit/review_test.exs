@@ -1,0 +1,40 @@
+defmodule Crit.ReviewTest do
+  use Crit.DataCase, async: true
+
+  alias Crit.Review
+
+  describe "create_changeset/2" do
+    test "valid attrs produce valid changeset" do
+      changeset = Review.create_changeset(%Review{}, %{})
+      assert changeset.valid?
+    end
+
+    test "generates token automatically" do
+      changeset = Review.create_changeset(%Review{}, %{})
+      assert changeset.changes[:token] != nil
+      assert String.length(changeset.changes[:token]) == 21
+    end
+
+    test "generates delete_token automatically" do
+      changeset = Review.create_changeset(%Review{}, %{})
+      assert changeset.changes[:delete_token] != nil
+      assert String.length(changeset.changes[:delete_token]) == 21
+    end
+
+    test "token and delete_token are different" do
+      changeset = Review.create_changeset(%Review{}, %{})
+      assert changeset.changes[:token] != changeset.changes[:delete_token]
+    end
+
+    test "review_round defaults to 0 when not provided" do
+      changeset = Review.create_changeset(%Review{}, %{})
+      refute Map.has_key?(changeset.changes, :review_round)
+    end
+
+    test "accepts optional review_round" do
+      changeset = Review.create_changeset(%Review{}, %{"review_round" => 2})
+      assert changeset.valid?
+      assert changeset.changes[:review_round] == 2
+    end
+  end
+end

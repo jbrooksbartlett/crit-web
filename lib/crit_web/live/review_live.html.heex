@@ -1,0 +1,188 @@
+<div class="crit-page">
+  <div class="crit-header">
+    <div class="crit-header-bar">
+      <div class="crit-header-left">
+        <a href="/" class="crit-header-title">Crit</a>
+        <%= if first = List.first(@review.files) do %>
+          <span class="crit-header-filename">
+            <svg
+              class="crit-filename-icon"
+              viewBox="0 0 16 16"
+              fill="currentColor"
+              aria-hidden="true"
+            >
+              <path
+                fill-rule="evenodd"
+                d="M3.75 1.5a.25.25 0 0 0-.25.25v12.5c0 .138.112.25.25.25h8.5a.25.25 0 0 0 .25-.25V6H9.75A1.75 1.75 0 0 1 8 4.25V1.5H3.75zm5.75.56v2.19c0 .138.112.25.25.25h2.19L9.5 2.06zM2 1.75C2 .784 2.784 0 3.75 0h5.086c.464 0 .909.184 1.237.513l3.414 3.414c.329.328.513.773.513 1.237v8.086A1.75 1.75 0 0 1 12.25 15h-8.5A1.75 1.75 0 0 1 2 13.25V1.75z"
+              />
+            </svg>
+            {first.file_path}
+          </span>
+        <% end %>
+      </div>
+      <div class="crit-header-right">
+        <div class="crit-name-pill" id="name-pill">
+          <button
+            type="button"
+            id="name-pill-btn"
+            phx-click={
+              JS.hide(to: "#name-pill-btn")
+              |> JS.show(to: "#name-form")
+              |> JS.focus(to: "#name-input")
+            }
+            class="crit-name-btn"
+          >
+            {if @display_name, do: @display_name, else: "Set your name"}
+          </button>
+          <form
+            id="name-form"
+            phx-submit={
+              JS.push("set_display_name")
+              |> JS.hide(to: "#name-form")
+              |> JS.show(to: "#name-pill-btn")
+            }
+            style="display:none"
+            class="crit-name-form"
+          >
+            <input
+              type="text"
+              id="name-input"
+              name="name"
+              value={@display_name || ""}
+              placeholder="Your name"
+              maxlength="40"
+              phx-keydown={JS.hide(to: "#name-form") |> JS.show(to: "#name-pill-btn")}
+              phx-key="Escape"
+              autocomplete="off"
+              class="crit-name-input"
+            />
+            <button type="submit" class="crit-name-save">Save</button>
+          </form>
+        </div>
+        <span id="viewedCount" class="crit-viewed-count" style="display:none"></span>
+        <button
+          class="comment-count-btn"
+          id="comment-count"
+          style="display:none"
+          title="Toggle comments panel"
+          aria-label="Toggle comments panel"
+        >
+          <svg
+            class="comment-count-icon"
+            viewBox="0 0 16 16"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="1.25"
+            aria-hidden="true"
+          >
+            <path
+              d="M1 2.75C1 1.784 1.784 1 2.75 1h10.5c.966 0 1.75.784 1.75 1.75v7.5A1.75 1.75 0 0 1 13.25 12H9.06l-2.573 2.573A1.458 1.458 0 0 1 4 13.543V12H2.75A1.75 1.75 0 0 1 1 10.25Z"
+              stroke-linejoin="round"
+            />
+          </svg>
+          <span class="comment-count-number" id="commentCountNumber"></span>
+        </button>
+        <button
+          class="crit-toc-toggle"
+          id="shortcuts-btn"
+          title="Keyboard shortcuts (?)"
+          aria-label="Keyboard shortcuts"
+        >
+          <svg
+            viewBox="0 0 16 16"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="1.25"
+            aria-hidden="true"
+          >
+            <circle cx="8" cy="8" r="6.5" /><path
+              d="M6.75 6.5a1.25 1.25 0 0 1 2.5 0c0 .69-.56 1.25-1.25 1.25V9"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+            /><circle cx="8" cy="11.25" r="0.625" fill="currentColor" stroke="none" />
+          </svg>
+        </button>
+        <button
+          class="crit-toc-toggle"
+          id="crit-toc-toggle"
+          title="Table of contents"
+          aria-label="Table of contents"
+        >
+          <svg
+            viewBox="0 0 16 16"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="1.25"
+            aria-hidden="true"
+          >
+            <path d="M2.5 4h11M2.5 8h11M2.5 12h11" stroke-linecap="round" />
+          </svg>
+        </button>
+        <Layouts.theme_toggle />
+        <button
+          class="btn btn-primary"
+          phx-click={JS.show(to: "#crit-prompt-panel", display: "flex")}
+        >
+          Get prompt
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <div id="crit-prompt-panel" class="crit-prompt-overlay" style="display:none">
+    <div class="crit-prompt-dialog">
+      <h3 class="crit-prompt-title">Review complete</h3>
+      <p class="crit-prompt-description">
+        Paste the prompt below into your agent, then wait for updates.
+      </p>
+      <div class="crit-prompt-text">{@prompt_text}</div>
+      <div class="crit-prompt-actions">
+        <button class="btn" phx-click={JS.hide(to: "#crit-prompt-panel")}>
+          Dismiss
+        </button>
+        <button
+          class="btn btn-primary"
+          phx-click={JS.dispatch("clipboard:copy", detail: %{text: @prompt_text})}
+        >
+          Copy prompt
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <div id="crit-toc" class="crit-toc crit-toc-hidden">
+    <div class="crit-toc-header">
+      <span>Contents</span>
+      <button
+        class="crit-toc-close"
+        title="Close table of contents"
+        aria-label="Close table of contents"
+      >
+        &#x2715;
+      </button>
+    </div>
+    <ul class="crit-toc-list"></ul>
+  </div>
+
+  <div id="crit-main-layout" class="crit-main-layout">
+    <div id="fileTreePanel" class="tree-panel" style="display:none">
+      <div class="tree-header">
+        <span class="tree-title">Files</span>
+        <span id="fileTreeStats" class="tree-stats"></span>
+      </div>
+      <div id="fileTreeBody" class="tree-body"></div>
+    </div>
+
+    <div class="crit-main-content">
+      <div
+        id="document-renderer"
+        phx-hook=".DocumentRenderer"
+        phx-update="ignore"
+        data-identity={@identity}
+        data-review-round={@review.review_round || 0}
+      >
+        <div class="crit-loading">Loading document...</div>
+      </div>
+    </div>
+  </div>
+</div>

@@ -1,0 +1,168 @@
+defmodule CritWeb.ReviewLive do
+  use CritWeb, :live_view
+
+  alias Crit.Reviews
+
+  @pubsub Crit.PubSub
+
+  @impl true
+  def mount(%{"token" => token}, session, socket) do
+    identity = Map.get(session, "identity", Ecto.UUID.generate())
+    display_name = Map.get(session, "display_name")
+
+    case Reviews.get_by_token(token) do
+      nil ->
+        {:ok,
+         socket
+         |> put_flash(:error, "Review not found.")
+         |> redirect(to: ~p"/"), layout: {CritWeb.Layouts, :review}}
+
+      review ->
+        demo? = review.token == Application.get_env(:crit, :demo_review_token)
+
+        files_data =
+          Enum.map(review.files, fn f ->
+            %{path: f.file_path, content: f.content, position: f.position}
+          end)
+
+        socket =
+          if connected?(socket) do
+            Phoenix.PubSub.subscribe(@pubsub, "review:#{token}")
+            Reviews.touch_last_activity(review)
+
+            comments = review.comments |> filter_demo_comments(demo?, identity)
+
+            push_event(socket, "init", %{
+              comments: serialize_comments(comments),
+              display_name: display_name,
+              files: files_data
+            })
+          else
+            socket
+          end
+
+        export_url = CritWeb.Endpoint.url() <> ~p"/api/export/#{review.token}/review"
+        prompt_text = "Please fetch #{export_url} and implement all the review comments."
+
+        {:ok,
+         socket
+         |> assign(:review, review)
+         |> assign(:identity, identity)
+         |> assign(:display_name, display_name)
+         |> assign(:demo?, demo?)
+         |> assign(:prompt_text, prompt_text)
+         |> assign(:page_title, display_filename(review))
+         |> assign(
+           :meta_description,
+           "Shared review of #{display_filename(review)} on Crit. View inline comments and add your own feedback."
+         )
+         |> assign(:noindex, true)
+         |> assign(:og_type, "article")
+         |> assign(:og_url, CritWeb.Endpoint.url() <> ~p"/r/#{review.token}"),
+         layout: {CritWeb.Layouts, :review}}
+    end
+  end
+
+  @impl true
+  def handle_event(
+        "add_comment",
+        %{"start_line" => sl, "end_line" => el, "body" => body} = params,
+        socket
+      ) do
+    %{review: review, identity: identity} = socket.assigns
+    file_path = params["file_path"]
+
+    attrs = %{
+      "start_line" => sl,
+      "end_line" => el,
+      "body" => body
+    }
+
+    case Reviews.create_comment(review, attrs, identity, socket.assigns.display_name, file_path) do
+      {:ok, _comment} ->
+        broadcast_comments(review)
+        {:noreply, socket}
+
+      {:error, _changeset} ->
+        {:noreply, put_flash(socket, :error, "Failed to save comment.")}
+    end
+  end
+
+  @impl true
+  def handle_event("edit_comment", %{"id" => id, "body" => body}, socket) do
+    %{review: review, identity: identity} = socket.assigns
+
+    case Reviews.update_comment(id, body, identity) do
+      {:ok, _comment} ->
+        broadcast_comments(review)
+        {:noreply, socket}
+
+      {:error, :unauthorized} ->
+        {:noreply, put_flash(socket, :error, "You can only edit your own comments.")}
+
+      {:error, _} ->
+        {:noreply, put_flash(socket, :error, "Failed to update comment.")}
+    end
+  end
+
+  @impl true
+  def handle_event("delete_comment", %{"id" => id}, socket) do
+    %{review: review, identity: identity} = socket.assigns
+
+    case Reviews.delete_comment(id, identity) do
+      {:ok, _} ->
+        broadcast_comments(review)
+        {:noreply, socket}
+
+      {:error, :unauthorized} ->
+        {:noreply, put_flash(socket, :error, "You can only delete your own comments.")}
+
+      {:error, _} ->
+        {:noreply, put_flash(socket, :error, "Failed to delete comment.")}
+    end
+  end
+
+  @impl true
+  def handle_event("set_display_name", %{"name" => name}, socket) do
+    # This event updates the in-memory assign only. LiveView cannot write to
+    # the cookie session after mount, so the JS hook also POSTs to /set-name
+    # (the controller endpoint) which persists the name to the session.
+    case Crit.DisplayName.normalize(name) do
+      nil ->
+        {:noreply, socket}
+
+      name ->
+        {:noreply,
+         socket
+         |> assign(:display_name, name)
+         |> push_event("display_name_updated", %{display_name: name})}
+    end
+  end
+
+  @impl true
+  def handle_info({:comments_updated, comments}, socket) do
+    %{demo?: demo?, identity: identity} = socket.assigns
+    filtered = filter_demo_comments(comments, demo?, identity)
+    {:noreply, push_event(socket, "comments_updated", %{comments: serialize_comments(filtered)})}
+  end
+
+  defp broadcast_comments(%{token: token} = review) do
+    comments = Reviews.list_comments(review)
+    Phoenix.PubSub.broadcast(@pubsub, "review:#{token}", {:comments_updated, comments})
+  end
+
+  defp serialize_comments(comments) do
+    Enum.map(comments, &Reviews.serialize_comment/1)
+  end
+
+  defp filter_demo_comments(comments, false, _identity), do: comments
+
+  defp filter_demo_comments(comments, true, identity) do
+    Enum.filter(comments, fn c ->
+      c.author_identity in ["imported", identity]
+    end)
+  end
+
+  defp display_filename(%{files: [first | _]}), do: first.file_path
+  defp display_filename(_), do: "Review"
+end
