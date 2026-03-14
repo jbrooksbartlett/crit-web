@@ -581,14 +581,12 @@
     class="max-w-[1100px] mx-auto mt-2 mb-16 px-10 max-sm:px-5 w-full"
     id="self-hosting-card"
   >
-    <div class="feature-card block border border-(--crit-border) rounded-lg bg-(--crit-bg-secondary) p-6 opacity-60">
+    <a
+      href="/self-hosting"
+      class="feature-card block border border-(--crit-border) rounded-lg bg-(--crit-bg-secondary) p-6 hover:border-(--crit-accent) transition-colors"
+    >
       <div class="flex items-center justify-between max-sm:flex-col max-sm:items-start max-sm:gap-4">
         <div>
-          <div class="flex items-center gap-3 mb-2">
-            <span class="font-mono text-xs tracking-widest uppercase text-(--crit-fg-muted)">
-              Coming Soon
-            </span>
-          </div>
           <h3 class="text-lg font-semibold tracking-tight mb-1">Self-Host Crit Web</h3>
           <p class="text-sm text-(--crit-fg-secondary) leading-relaxed max-w-[520px]">
             Run your own instance with Docker. One command to start, automatic migrations, works with any Postgres database.
@@ -602,62 +600,6 @@
           <div class="text-(--crit-green)">✓ crit-web running on :4000</div>
         </div>
       </div>
-    </div>
+    </a>
   </section>
 </div>
-
-<script>
-  document.querySelectorAll(".copy-btn").forEach(btn => {
-    const defaultIcon = btn.querySelector(".icon-default");
-    const copiedIcon = btn.querySelector(".icon-copied");
-    btn.addEventListener("click", () => {
-      const raw = btn.previousElementSibling.textContent.trim();
-      const text = raw.replace(/^\$\s+/, "");
-      navigator.clipboard.writeText(text).then(() => {
-        btn.style.color = "var(--crit-green)";
-        defaultIcon.classList.add("hidden");
-        copiedIcon.classList.remove("hidden");
-        setTimeout(() => {
-          btn.style.color = "";
-          defaultIcon.classList.remove("hidden");
-          copiedIcon.classList.add("hidden");
-        }, 2000);
-      });
-    });
-  });
-
-  // Feature cards scroll-triggered reveal
-  const featuresGrid = document.getElementById("features-grid");
-  if (featuresGrid) {
-    const observer = new IntersectionObserver((entries) => {
-      entries.forEach(entry => {
-        if (entry.isIntersecting) {
-          const cards = featuresGrid.querySelectorAll(".feature-card");
-          cards.forEach((card, i) => {
-            setTimeout(() => card.classList.add("revealed"), i * 80);
-          });
-          // Chain the self-hosting card after the last feature card
-          const selfHosting = document.querySelector("#self-hosting-card .feature-card");
-          if (selfHosting) {
-            setTimeout(() => selfHosting.classList.add("revealed"), cards.length * 80);
-          }
-          observer.unobserve(entry.target);
-        }
-      });
-    }, { threshold: 0.05 });
-    observer.observe(featuresGrid);
-  }
-
-  document.querySelectorAll(".install-tab").forEach(tab => {
-    tab.addEventListener("click", () => {
-      document.querySelectorAll(".install-tab").forEach(t => {
-        t.classList.remove("border-(--crit-accent)", "text-(--crit-accent)");
-        t.classList.add("border-transparent", "text-(--crit-fg-muted)");
-      });
-      document.querySelectorAll(".install-panel").forEach(p => p.classList.add("hidden"));
-      tab.classList.add("border-(--crit-accent)", "text-(--crit-accent)");
-      tab.classList.remove("border-transparent", "text-(--crit-fg-muted)");
-      document.getElementById(tab.dataset.target).classList.remove("hidden");
-    });
-  });
-</script>
