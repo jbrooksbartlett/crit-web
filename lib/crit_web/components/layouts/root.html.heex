@@ -51,9 +51,7 @@
     <.live_title default="Crit — Review AI plans before they become code">
       {assigns[:page_title]}
     </.live_title>
-    <script :if={assigns[:json_ld]} type="application/ld+json">
-      {raw(JSON.encode!(assigns[:json_ld]))}
-    </script>
+    {raw(if assigns[:json_ld], do: ~s(<script type="application/ld+json">#{JSON.encode!(assigns[:json_ld])}</script>), else: "")}
     <link phx-track-static rel="stylesheet" href={~p"/assets/css/app.css"} />
     <script phx-track-static type="module" src={~p"/assets/js/app.js"}>
     </script>

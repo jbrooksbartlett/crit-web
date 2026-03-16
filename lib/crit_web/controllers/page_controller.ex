@@ -12,7 +12,14 @@ defmodule CritWeb.PageController do
         "Comments support markdown - use **bold**, *italic*, `inline code`, code blocks, links, and lists to format your feedback.",
         "Edit or delete any comment you've made. Each comment is anchored to the exact lines it references.",
         "On the hosted version (crit.live), multiple reviewers can comment on the same document. Each author's comments are color-coded by a unique hue so you can tell at a glance who said what."
-      ]
+      ],
+      why_this_matters: [
+        "AI coding agents are fast, but they're also opaque. When Claude Code or Cursor rewrites a function, you don't get a natural place to say \"this is wrong at line 12\" unless you're already in a PR workflow. Most people end up pasting chunks of code into the chat and hoping the agent understands which part they mean. That's slow and error-prone.",
+        "Inline comments let you anchor feedback to the exact lines that need it. Instead of writing \"the error handling in the auth function looks wrong,\" you select lines 34-41 and leave a comment there. The agent reads `.crit.json` (the review state file) and knows precisely what you're reacting to. No ambiguity, no re-explaining context.",
+        "This also matters when reviewing plans, not just code. If your agent writes a markdown spec or a step-by-step plan before executing, you can review that document the same way you'd review a PR. Comment on the parts that need changing, approve the parts that look right, and hand it back."
+      ],
+      how_crit_compares:
+        "GitHub PR reviews have the same interaction model, but they require a repo, a branch, and a push — which doesn't fit a local planning loop where the document hasn't been committed yet. CodeRabbit and similar tools automate the review itself; Crit is for when you are the reviewer and you want structured control over what the agent does next."
     },
     "split-unified-diff" => %{
       title: "Git Diffs & Round Diffs",
@@ -24,7 +31,14 @@ defmodule CritWeb.PageController do
         "Code files display git diff hunks with dual line numbers, expandable context, and colored backgrounds for additions and deletions.",
         "Between review rounds, changed sections are visually marked so you can quickly spot what your agent edited — in both markdown and code files. Navigate between changes with `n`/`N`.",
         "Comments from the previous round are carried forward. Resolved comments are marked, and open ones remain visible on the updated lines."
-      ]
+      ],
+      why_this_matters: [
+        "When an AI agent makes changes across 8 files, the question isn't just \"what changed\" — it's \"did it change the right things and only the right things.\" A flat file view doesn't answer that. You need colored diffs, line by line, so you can scan for unintended deletions or additions that crept in alongside the real changes.",
+        "Round diffs are the part that's harder to find elsewhere. After you leave comments and the agent makes a second pass, you need to know what it actually did in response. Did it address your comment? Did it introduce something new while fixing something else? The diff between review rounds surfaces this clearly, without you manually diffing files or reading through git history.",
+        "Split and unified view toggling is a small thing, but it matters. Split works better for structural changes where you want to see old and new side by side. Unified is faster to scan for line-level edits. Having both means you're not adapting to the tool."
+      ],
+      how_crit_compares:
+        "Standard `git diff` in the terminal gives you unified diffs but no persistence, no comments, and no round-to-round comparison. Tools like Kaleidoscope and the GitHub diff viewer handle git diffs well but don't connect to an AI review loop. Crit's round diffs are specifically designed for iterative agent sessions, not one-time code review."
     },
     "ai-review-loop" => %{
       title: "AI Review Loop",
@@ -36,7 +50,14 @@ defmodule CritWeb.PageController do
         "The prompt tells the agent to read `.crit.json`, address unresolved comments, and run `crit go <port>` when done. No copy-paste needed — `crit listen` delivers it directly.",
         "When the agent runs `crit go`, the browser starts a new round with a diff of what changed. Previous comments show as resolved or still open.",
         "Add new comments on the updated version and repeat. When all comments are resolved, Crit detects it and generates a clean confirmation prompt — the loop ends when you're satisfied."
-      ]
+      ],
+      why_this_matters: [
+        "The default interaction with AI coding agents is conversational: you type, it responds, you type again. That works for small tasks. For anything involving real code changes across multiple files, it breaks down because the conversation history gets long, context is lost, and you can't easily point back to \"that thing you changed in round 2.\"",
+        "Crit replaces the conversation loop with a structured review loop. You review the output, leave comments on specific lines, submit Finish Review, and `crit listen` notifies the agent. The agent reads exactly what you wrote and where you wrote it, then runs `crit go` when it's done. You get a diff. You review again. The loop has a clear state at each step.",
+        "This structure also makes it easier to stop and resume. The state lives in `.crit.json`, so if you close your terminal and come back the next day, the review is still there. You're not reconstructing context from a chat thread."
+      ],
+      how_crit_compares:
+        "Most AI agent workflows treat human feedback as a free-text prompt injected into the conversation. That works, but it's informal — there's no enforced structure around what the human reviewed, what they approved, and what they asked to change. Crit externalizes that state into a file the agent reads directly, which is more reliable and easier to audit after the fact."
     },
     "vim-keybindings" => %{
       title: "Vim Keybindings",
@@ -48,7 +69,14 @@ defmodule CritWeb.PageController do
         "Press c to open the comment form on the current line. Type your feedback, then Ctrl+Enter to submit. Press Escape to cancel.",
         "Use e to edit an existing comment, d to delete it. Press f to finish the review and copy the prompt. Press t to toggle the table of contents.",
         "Press ? at any time to see the full shortcut reference."
-      ]
+      ],
+      why_this_matters: [
+        "If you work in the terminal, switching to a mouse to click through a review breaks flow. You're already in a mental mode of reading and judging code; stopping to grab the mouse and drag through line numbers is friction that adds up across a long review session.",
+        "Crit's keyboard navigation lets you move line by line with `j`/`k`, open a comment form with `c`, and submit — without touching the mouse at all. For developers who spend most of the day in Neovim or a terminal multiplexer, this makes Crit feel like it belongs in the same environment rather than being a browser tool you have to context-switch into.",
+        "Finishing a review is also a keyboard action. When you're done, press `f` and the review closes. The whole loop, from opening Crit to handing off to the agent, can stay entirely keyboard-driven."
+      ],
+      how_crit_compares:
+        "Web-based review tools like GitHub's PR interface and CodeRabbit's dashboard are mouse-first. There are browser extensions that add some keyboard navigation to GitHub reviews, but they're patchy and don't extend to tools outside of GitHub. Crit's keybindings are built in from the start, not bolted on."
     },
     "share-reviews" => %{
       title: "Share Reviews",
@@ -60,7 +88,14 @@ defmodule CritWeb.PageController do
         "Anyone who opens the link sees the full document with all comments. They can add their own feedback without installing anything - it works in any browser.",
         "Each reviewer's comments are color-coded by a unique hue, making it easy to track who said what in a multi-person review.",
         "Use `crit share --qr` to print a QR code in the terminal for quick mobile access. Unpublish anytime with `crit unpublish`. Shared reviews auto-expire after 30 days of inactivity."
-      ]
+      ],
+      why_this_matters: [
+        "Before your agent writes a single line of code, you want to make sure the plan is right. But plans are often reviewed solo — you read the markdown, leave comments, and iterate. At some point you want a teammate, a tech lead, or a stakeholder to weigh in on the approach before the agent starts building.",
+        "A share link lets you send the plan with all your inline comments intact. The person you send it to sees the same document with the same annotations, and they can add their own. That's useful for getting sign-off on an architecture decision, collecting feedback from someone who isn't in your terminal, or asking a colleague \"does this plan look right to you\" before the agent executes.",
+        "Unpublishing is straightforward — use the Unpublish button in the UI or run `crit unpublish` from the terminal. Shared reviews also auto-expire after 30 days of inactivity, so nothing lingers indefinitely."
+      ],
+      how_crit_compares:
+        "Google Docs and Notion let you share documents with comments, but they're not designed for reviewing structured plans with line-level precision. GitHub PR reviews support inline comments but require a repo and a push — your plan hasn't been committed yet. Crit share links are open — anyone with the URL can view and comment, no account needed."
     },
     "syntax-highlighting" => %{
       title: "Syntax Highlighting",
@@ -72,7 +107,14 @@ defmodule CritWeb.PageController do
         "Each line inside a fenced code block is a separate commentable element. Select line 3 of a code block and leave a review note right there.",
         "Highlighting respects your current theme - dark and light palettes are both fully styled.",
         "Code blocks preserve whitespace and formatting exactly as written. Long lines wrap so nothing is hidden off-screen."
-      ]
+      ],
+      why_this_matters: [
+        "AI agents frequently produce output that mixes prose and code — a plan document that includes shell commands, a spec that has SQL examples, a markdown file with embedded TypeScript snippets. When you're reviewing that output, you need the code to actually render as code, not as a wall of monospace text.",
+        "Syntax highlighting makes errors visible. A wrong variable name or a mismatched bracket is much easier to spot when tokens are colored by role. When you're reviewing agent output for correctness, not just structure, that visual parsing matters.",
+        "Per-line commenting inside code blocks is the part that's easy to overlook. Most markdown renderers highlight the block as a whole. Crit splits fenced code blocks into individual lines so you can select lines 4-7 inside a code block and leave a comment there, the same way you would on any other part of the document."
+      ],
+      how_crit_compares:
+        "Standard markdown previewers (VS Code preview, Marked, etc.) render syntax highlighting but don't support comments. GitHub renders fenced code blocks with highlighting and allows PR comments at the file level, but you can't comment on a specific line inside a code block in a plain markdown file. Crit treats code blocks as first-class reviewable content."
     },
     "mermaid-diagrams" => %{
       title: "Mermaid Diagrams",
@@ -84,7 +126,14 @@ defmodule CritWeb.PageController do
         "Supports flowcharts, sequence diagrams, class diagrams, state diagrams, Gantt charts, ER diagrams, and other mermaid diagram types.",
         "Diagrams scale to fit the available width without overflowing the layout.",
         "You can still comment on mermaid blocks. Select the block's line range and leave feedback about the diagram's structure or content."
-      ]
+      ],
+      why_this_matters: [
+        "AI agents are capable of producing architecture diagrams, sequence flows, and state machines as Mermaid syntax if you ask them to. That's useful, but raw Mermaid text is hard to review. You can read it, but you can't quickly tell whether the flow makes sense until you see the rendered diagram.",
+        "When Crit renders the diagram inline, you can review the visual output and the source simultaneously. If the sequence diagram shows the wrong order of events, you select the relevant lines in the source and leave a comment. The agent gets the comment with line numbers pointing to the exact Mermaid code that needs changing.",
+        "This is particularly useful for architecture review at the planning stage. Before an agent writes any code, you can ask it to produce a diagram of the proposed approach, review it in Crit, leave comments, and let it revise before implementation starts. Catching structural issues in a diagram is faster than catching them in code."
+      ],
+      how_crit_compares:
+        "Most markdown editors that support Mermaid (GitHub markdown preview, Notion, HackMD) render diagrams in preview mode, but they don't support inline comments on the source. Dedicated diagramming tools like Miro and draw.io don't accept Mermaid input and aren't designed for the write-review-revise loop with an AI agent."
     }
   }
 
