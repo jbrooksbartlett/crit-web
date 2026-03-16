@@ -61,6 +61,67 @@ const commentMd = markdownit({
   },
 })
 
+// ===== Suggestion Diff Renderer =====
+function renderSuggestionDiff(suggestionContent, originalLines) {
+  let sugLines = suggestionContent.replace(/\n$/, '').split('\n')
+  let html = '<div class="suggestion-diff">'
+  html += '<div class="suggestion-header">Suggested change</div>'
+
+  const origLen = (originalLines && originalLines.length > 0) ? originalLines.length : 0
+  const isEmptySuggestion = sugLines.length === 1 && sugLines[0] === '' && origLen > 0
+  const sugLen = isEmptySuggestion ? 0 : sugLines.length
+  const pairedLen = Math.min(origLen, sugLen)
+  const hasWordDiff = typeof wordDiff === 'function' && typeof applyWordDiffToHtml === 'function'
+
+  // Compute word-level diffs for paired lines
+  const delContents = []
+  const addContents = []
+  for (let i = 0; i < pairedLen; i++) {
+    const wd = hasWordDiff ? wordDiff(originalLines[i], sugLines[i]) : null
+    if (wd) {
+      delContents.push(applyWordDiffToHtml(escapeHtml(originalLines[i]), wd.oldRanges, 'diff-word-del'))
+      addContents.push(applyWordDiffToHtml(escapeHtml(sugLines[i]), wd.newRanges, 'diff-word-add'))
+    } else {
+      delContents.push(escapeHtml(originalLines[i]))
+      addContents.push(escapeHtml(sugLines[i]))
+    }
+  }
+
+  // All deletion lines first (paired + unpaired)
+  for (let j = 0; j < origLen; j++) {
+    const dc = j < pairedLen ? delContents[j] : escapeHtml(originalLines[j])
+    html += '<div class="suggestion-line suggestion-line-del">'
+      + '<span class="suggestion-line-sign">\u2212</span>'
+      + '<span class="suggestion-line-content">' + dc + '</span></div>'
+  }
+
+  // All addition lines (paired + unpaired)
+  for (let k = 0; k < sugLen; k++) {
+    const ac = k < pairedLen ? addContents[k] : escapeHtml(sugLines[k])
+    html += '<div class="suggestion-line suggestion-line-add">'
+      + '<span class="suggestion-line-sign">+</span>'
+      + '<span class="suggestion-line-content">' + ac + '</span></div>'
+  }
+
+  html += '</div>'
+  return html
+}
+
+;(function() {
+  const defaultFence = commentMd.renderer.rules.fence
+  commentMd.renderer.rules.fence = function(tokens, idx, options, env, self) {
+    const token = tokens[idx]
+    const info = token.info ? token.info.trim() : ''
+    if (info === 'suggestion') {
+      return renderSuggestionDiff(token.content, env && env.originalLines)
+    }
+    if (defaultFence) {
+      return defaultFence(tokens, idx, options, env, self)
+    }
+    return self.renderToken(tokens, idx, options)
+  }
+})()
+
 function showToast(message, duration = 3000) {
   const toast = document.createElement('div')
   toast.className = 'mini-toast'
@@ -1484,7 +1545,11 @@ function createCommentElement(comment, ctx) {
 
   const body = document.createElement("div")
   body.className = "comment-body"
-  body.innerHTML = commentMd.render(comment.body)
+  const env = {}
+  if (ctx && ctx.rawContent && comment.start_line && comment.end_line && !comment.side) {
+    env.originalLines = ctx.rawContent.split('\n').slice(comment.start_line - 1, comment.end_line)
+  }
+  body.innerHTML = commentMd.render(comment.body, env)
 
   card.appendChild(header)
   card.appendChild(body)
