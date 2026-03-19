@@ -13,7 +13,12 @@ defmodule Crit.Reviews do
         where: r.token == ^token,
         preload: [
           files: ^from(f in ReviewFile, order_by: [asc: f.position]),
-          comments: ^from(c in Comment, order_by: [asc: c.start_line, asc: c.end_line])
+          comments:
+            ^from(c in Comment,
+              where: is_nil(c.parent_id),
+              order_by: [asc: c.start_line, asc: c.end_line],
+              preload: [:replies]
+            )
         ]
 
     Repo.one(query)
@@ -39,8 +44,9 @@ defmodule Crit.Reviews do
   def list_comments(review_id) when is_binary(review_id) do
     Repo.all(
       from c in Comment,
-        where: c.review_id == ^review_id,
-        order_by: [asc: c.start_line, asc: c.end_line]
+        where: c.review_id == ^review_id and is_nil(c.parent_id),
+        order_by: [asc: c.start_line, asc: c.end_line],
+        preload: [:replies]
     )
   end
 
@@ -149,11 +155,41 @@ defmodule Crit.Reviews do
 
   defp insert_imported_comments(review, comments_attrs) do
     Enum.reduce_while(comments_attrs, :ok, fn attrs, :ok ->
+      replies_attrs = attrs["replies"] || []
+
       %Comment{}
       |> Comment.create_changeset(attrs)
       |> Ecto.Changeset.put_change(:review_id, review.id)
       |> Ecto.Changeset.put_change(:author_identity, "imported")
       |> Ecto.Changeset.put_change(:file_path, attrs["file"])
+      |> Ecto.Changeset.put_change(:resolved, attrs["resolved"] == true)
+      |> Repo.insert()
+      |> case do
+        {:ok, comment} ->
+          case insert_replies(comment, replies_attrs) do
+            :ok -> {:cont, :ok}
+            error -> {:halt, error}
+          end
+
+        {:error, changeset} ->
+          {:halt, {:error, changeset}}
+      end
+    end)
+  end
+
+  defp insert_replies(_comment, []), do: :ok
+
+  defp insert_replies(comment, replies_attrs) do
+    Enum.reduce_while(replies_attrs, :ok, fn attrs, :ok ->
+      %Comment{}
+      |> Comment.reply_changeset(attrs)
+      |> Ecto.Changeset.put_change(:parent_id, comment.id)
+      |> Ecto.Changeset.put_change(:review_id, comment.review_id)
+      |> Ecto.Changeset.put_change(:author_identity, "imported")
+      |> Ecto.Changeset.put_change(
+        :author_display_name,
+        attrs["author_display_name"] || attrs["author"]
+      )
       |> Repo.insert()
       |> case do
         {:ok, _} -> {:cont, :ok}
@@ -311,8 +347,77 @@ defmodule Crit.Reviews do
     |> Repo.all()
   end
 
+  @doc "Toggle the resolved state of a comment. Scoped to the given review."
+  def resolve_comment(comment_id, resolved, review_id) when is_boolean(resolved) do
+    case Repo.get_by(Comment, id: comment_id, review_id: review_id) do
+      nil -> {:error, :not_found}
+      %Comment{parent_id: parent} when parent != nil -> {:error, :not_found}
+      comment -> comment |> Ecto.Changeset.change(resolved: resolved) |> Repo.update()
+    end
+  end
+
+  @doc "Create a reply to an existing comment. Scoped to the given review."
+  def create_reply(comment_id, attrs, identity, display_name, review_id) do
+    case Repo.get_by(Comment, id: comment_id, review_id: review_id) do
+      nil ->
+        {:error, :not_found}
+
+      %Comment{parent_id: parent} when parent != nil ->
+        {:error, :not_found}
+
+      parent ->
+        %Comment{}
+        |> Comment.reply_changeset(attrs)
+        |> Ecto.Changeset.put_change(:parent_id, comment_id)
+        |> Ecto.Changeset.put_change(:review_id, parent.review_id)
+        |> Ecto.Changeset.put_change(:author_identity, identity)
+        |> Ecto.Changeset.put_change(:author_display_name, display_name)
+        |> Repo.insert()
+    end
+  end
+
+  @doc "Update a reply's body if the identity matches the author."
+  def update_reply(reply_id, body, identity) do
+    case Repo.get(Comment, reply_id) do
+      nil ->
+        {:error, :not_found}
+
+      %Comment{parent_id: nil} ->
+        {:error, :not_found}
+
+      %Comment{author_identity: author} = reply when author == identity ->
+        reply |> Comment.reply_changeset(%{"body" => body}) |> Repo.update()
+
+      _ ->
+        {:error, :unauthorized}
+    end
+  end
+
+  @doc "Delete a reply if the identity matches the author."
+  def delete_reply(reply_id, identity) do
+    case Repo.get(Comment, reply_id) do
+      nil ->
+        {:error, :not_found}
+
+      %Comment{parent_id: nil} ->
+        {:error, :not_found}
+
+      %Comment{author_identity: author} = reply when author == identity ->
+        Repo.delete(reply)
+
+      _ ->
+        {:error, :unauthorized}
+    end
+  end
+
   @doc "Serialize a comment to the API JSON shape."
   def serialize_comment(%Comment{} = c) do
+    replies =
+      case c.replies do
+        %Ecto.Association.NotLoaded{} -> []
+        list -> list
+      end
+
     %{
       id: c.id,
       start_line: c.start_line,
@@ -322,8 +427,19 @@ defmodule Crit.Reviews do
       author_display_name: c.author_display_name,
       review_round: c.review_round,
       file_path: c.file_path,
+      resolved: c.resolved,
       created_at: DateTime.to_iso8601(c.inserted_at),
-      updated_at: DateTime.to_iso8601(c.updated_at)
+      updated_at: DateTime.to_iso8601(c.updated_at),
+      replies:
+        Enum.map(replies, fn r ->
+          %{
+            id: r.id,
+            body: r.body,
+            author_identity: r.author_identity,
+            author_display_name: r.author_display_name,
+            created_at: DateTime.to_iso8601(r.inserted_at)
+          }
+        end)
     }
   end
 end
