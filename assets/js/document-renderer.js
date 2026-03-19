@@ -1939,16 +1939,15 @@ function createCommentElement(comment, ctx) {
   const actions = document.createElement("div")
   actions.className = "comment-actions"
 
-  // Resolve button — available for all users
-  const resolveBtn = document.createElement('button')
-  resolveBtn.title = 'Resolve'
-  resolveBtn.innerHTML = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>'
-  resolveBtn.addEventListener('click', function() {
-    ctx.pushEvent("resolve_comment", { id: comment.id, resolved: true })
-  })
-  actions.appendChild(resolveBtn)
-
   if (isOwn) {
+    const resolveBtn = document.createElement('button')
+    resolveBtn.title = 'Resolve'
+    resolveBtn.innerHTML = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>'
+    resolveBtn.addEventListener('click', function() {
+      ctx.pushEvent("resolve_comment", { id: comment.id, resolved: true })
+    })
+    actions.appendChild(resolveBtn)
+
     const editBtn = document.createElement("button")
     editBtn.title = "Edit"
     editBtn.innerHTML = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 3a2.85 2.83 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5Z"/><path d="m15 5 4 4"/></svg>'

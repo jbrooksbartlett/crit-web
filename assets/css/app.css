@@ -515,6 +515,7 @@ body.dragging .line-block.selected .line-gutter .line-add { display: flex; }
 .comment-line-ref { font-weight: 600; color: var(--crit-accent); font-family: var(--font-mono); }
 .comment-actions { display: flex; gap: 6px; }
 .comment-actions button { background: none; border: none; color: var(--crit-fg-muted); cursor: pointer; font-size: 12px; padding: 2px 6px; border-radius: 3px; transition: all 0.15s; }
+.comment-actions button svg { width: 13px; height: 13px; stroke-width: 1.5; }
 .comment-actions button:hover { color: var(--crit-fg-primary); background: var(--crit-bg-hover); }
 .comment-actions .delete-btn:hover { color: var(--crit-red); }
 
