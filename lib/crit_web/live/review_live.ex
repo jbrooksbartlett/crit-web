@@ -43,12 +43,13 @@ defmodule CritWeb.ReviewLive do
 
         comments_url = CritWeb.Endpoint.url() <> ~p"/api/export/#{review.token}/comments"
 
+        file_paths = review.files |> Enum.map(& &1.file_path) |> Enum.join(" ")
+
         local_prompt_text =
           "Please fetch #{comments_url} — these are review comments from crit. " <>
             "Comments are grouped per file with start_line/end_line referencing the source. " <>
             "Read each comment, address it in the relevant file and location, " <>
-            "then run `crit go <port>` to signal the review is ready for the next round " <>
-            "(check for a running crit server, or skip if none is running)."
+            "then run `crit share #{file_paths}` to sync the updated files back and signal the review is ready for the next round."
 
         export_url = CritWeb.Endpoint.url() <> ~p"/api/export/#{review.token}/review"
 
@@ -65,6 +66,9 @@ defmodule CritWeb.ReviewLive do
          |> assign(:local_prompt_text, local_prompt_text)
          |> assign(:full_export_prompt_text, full_export_prompt_text)
          |> assign(:prompt_mode, "local")
+         |> assign(:show_round_diff, false)
+         |> assign(:prev_round_snapshots, %{})
+         |> assign(:diff_mode, "split")
          |> assign(:page_title, display_filename(review))
          |> assign(
            :meta_description,
@@ -80,6 +84,32 @@ defmodule CritWeb.ReviewLive do
   def handle_event("set_prompt_mode", %{"mode" => mode}, socket)
       when mode in ["local", "full_export"] do
     {:noreply, assign(socket, :prompt_mode, mode)}
+  end
+
+  def handle_event("toggle_round_diff", _params, socket) do
+    review = socket.assigns.review
+
+    if socket.assigns.show_round_diff do
+      {:noreply,
+       socket
+       |> assign(show_round_diff: false, prev_round_snapshots: %{})
+       |> push_event("round_diff_updated", %{enabled: false, snapshots: %{}})}
+    else
+      snapshots = Reviews.get_round_snapshots(review.id, review.review_round - 1)
+
+      {:noreply,
+       socket
+       |> assign(show_round_diff: true, prev_round_snapshots: snapshots)
+       |> push_event("round_diff_updated", %{enabled: true, snapshots: snapshots})}
+    end
+  end
+
+  def handle_event("set_diff_mode", %{"mode" => mode}, socket)
+      when mode in ["split", "unified"] do
+    {:noreply,
+     socket
+     |> assign(:diff_mode, mode)
+     |> push_event("diff_mode_updated", %{mode: mode})}
   end
 
   @impl true

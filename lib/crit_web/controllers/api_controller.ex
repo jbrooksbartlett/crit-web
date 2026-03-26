@@ -5,7 +5,7 @@ defmodule CritWeb.ApiController do
   alias Crit.Output
 
   # 30 write requests per minute per IP
-  plug :rate_limit_write when action in [:create]
+  plug :rate_limit_write when action in [:create, :update]
 
   @max_comments 500
 
@@ -116,7 +116,8 @@ defmodule CritWeb.ApiController do
       review ->
         comments = visible_comments(review)
         files = Enum.map(review.files, fn f -> %{path: f.file_path} end)
-        json(conn, Output.multi_file_comments_json(files, comments))
+        base_url = CritWeb.Endpoint.url()
+        json(conn, Output.multi_file_comments_json(review, files, comments, base_url))
     end
   end
 
@@ -140,6 +141,27 @@ defmodule CritWeb.ApiController do
     end
   end
 
+  def update(conn, %{"token" => token} = params) do
+    delete_token = params["delete_token"]
+    payload = Map.take(params, ["files", "comments", "review_round"])
+
+    case Reviews.upsert_review(token, delete_token, payload) do
+      {:ok, :updated, review} ->
+        url = CritWeb.Endpoint.url() <> ~p"/r/#{review.token}"
+        json(conn, %{url: url, review_round: review.review_round, changed: true})
+
+      {:ok, :no_changes, review} ->
+        url = CritWeb.Endpoint.url() <> ~p"/r/#{review.token}"
+        json(conn, %{url: url, review_round: review.review_round, changed: false})
+
+      {:error, :not_found} ->
+        not_found(conn)
+
+      {:error, :unauthorized} ->
+        conn |> put_status(401) |> json(%{error: "unauthorized"})
+    end
+  end
+
   def delete_review(conn, %{"delete_token" => delete_token})
       when is_binary(delete_token) and delete_token != "" do
     case Reviews.delete_by_delete_token(delete_token) do
@@ -156,6 +178,29 @@ defmodule CritWeb.ApiController do
 
   def delete_review(conn, _params) do
     conn |> put_status(400) |> json(%{error: "delete_token is required"})
+  end
+
+  if Mix.env() == :test do
+    def seed_comment(conn, %{"token" => token} = params) do
+      case Reviews.get_by_token(token) do
+        nil ->
+          not_found(conn)
+
+        review ->
+          attrs = %{
+            "start_line" => params["start_line"] || 1,
+            "end_line" => params["end_line"] || 1,
+            "body" => params["body"] || "web reviewer comment",
+            "file_path" => params["file"] || hd(review.files).file_path,
+            "scope" => "line"
+          }
+
+          {:ok, comment} =
+            Reviews.create_comment(review, attrs, "integration-test", "WebReviewer")
+
+          json(conn, Reviews.serialize_comment(comment))
+      end
+    end
   end
 
   # Handled by LocalhostCors plug — this action is never reached.
