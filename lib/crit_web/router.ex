@@ -10,11 +10,13 @@ defmodule CritWeb.Router do
     plug :put_secure_browser_headers
     plug CritWeb.Plugs.Identity
     plug CritWeb.Plugs.SecurityHeaders
+    plug CritWeb.Plugs.Auth
   end
 
   pipeline :api do
     plug :accepts, ["json"]
     plug CritWeb.Plugs.SecurityHeaders
+    plug CritWeb.Plugs.ApiAuth
   end
 
   pipeline :noindex do
@@ -42,13 +44,19 @@ defmodule CritWeb.Router do
     post "/set-name", ReviewController, :set_name
     post "/auth/login", AuthController, :login
     post "/auth/logout", AuthController, :logout
+
+    get "/auth/login", OAuthController, :request
+    get "/auth/login/callback", OAuthController, :callback
+    delete "/auth/logout", OAuthController, :delete
   end
 
   # Review pages and dashboard — noindex
   scope "/", CritWeb do
     pipe_through [:browser, :noindex]
 
-    live_session :review, on_mount: [] do
+    live_session :review,
+      on_mount: [],
+      session: {CritWeb.ReviewLive, :session_opts, []} do
       live "/r/:token", ReviewLive, :show
     end
 

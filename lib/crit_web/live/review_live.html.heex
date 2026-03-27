@@ -3,24 +3,26 @@
     <div class="crit-header-bar">
       <div class="crit-header-left">
         <a href="/" class="crit-header-title">Crit</a>
-        <%= if first = List.first(@review.files) do %>
-          <span class="crit-header-filename">
-            <svg
-              class="crit-filename-icon"
-              viewBox="0 0 16 16"
-              fill="currentColor"
-              aria-hidden="true"
-            >
-              <path
-                fill-rule="evenodd"
-                d="M3.75 1.5a.25.25 0 0 0-.25.25v12.5c0 .138.112.25.25.25h8.5a.25.25 0 0 0 .25-.25V6H9.75A1.75 1.75 0 0 1 8 4.25V1.5H3.75zm5.75.56v2.19c0 .138.112.25.25.25h2.19L9.5 2.06zM2 1.75C2 .784 2.784 0 3.75 0h5.086c.464 0 .909.184 1.237.513l3.414 3.414c.329.328.513.773.513 1.237v8.086A1.75 1.75 0 0 1 12.25 15h-8.5A1.75 1.75 0 0 1 2 13.25V1.75z"
-              />
-            </svg>
-            {first.file_path}
-          </span>
-        <% end %>
-        <%= if @review.review_round > 1 do %>
-          <span class="crit-header-round">Round #{@review.review_round}</span>
+        <%= if not (@auth_required and is_nil(@current_user)) do %>
+          <%= if first = List.first(@review.files) do %>
+            <span class="crit-header-filename">
+              <svg
+                class="crit-filename-icon"
+                viewBox="0 0 16 16"
+                fill="currentColor"
+                aria-hidden="true"
+              >
+                <path
+                  fill-rule="evenodd"
+                  d="M3.75 1.5a.25.25 0 0 0-.25.25v12.5c0 .138.112.25.25.25h8.5a.25.25 0 0 0 .25-.25V6H9.75A1.75 1.75 0 0 1 8 4.25V1.5H3.75zm5.75.56v2.19c0 .138.112.25.25.25h2.19L9.5 2.06zM2 1.75C2 .784 2.784 0 3.75 0h5.086c.464 0 .909.184 1.237.513l3.414 3.414c.329.328.513.773.513 1.237v8.086A1.75 1.75 0 0 1 12.25 15h-8.5A1.75 1.75 0 0 1 2 13.25V1.75z"
+                />
+              </svg>
+              {first.file_path}
+            </span>
+          <% end %>
+          <%= if @review.review_round > 1 do %>
+            <span class="crit-header-round">Round #{@review.review_round}</span>
+          <% end %>
         <% end %>
       </div>
       <div class="crit-header-right">
@@ -52,44 +54,69 @@
             <% end %>
           </div>
         <% end %>
-        <div class="crit-name-pill" id="name-pill">
-          <button
-            type="button"
-            id="name-pill-btn"
-            phx-click={
-              JS.hide(to: "#name-pill-btn")
-              |> JS.show(to: "#name-form")
-              |> JS.focus(to: "#name-input")
-            }
-            class="crit-name-btn"
-          >
-            {if @display_name, do: @display_name, else: "Set your name"}
-          </button>
-          <form
-            id="name-form"
-            phx-submit={
-              JS.push("set_display_name")
-              |> JS.hide(to: "#name-form")
-              |> JS.show(to: "#name-pill-btn")
-            }
-            style="display:none"
-            class="crit-name-form"
-          >
-            <input
-              type="text"
-              id="name-input"
-              name="name"
-              value={@display_name || ""}
-              placeholder="Your name"
-              maxlength="40"
-              phx-keydown={JS.hide(to: "#name-form") |> JS.show(to: "#name-pill-btn")}
-              phx-key="Escape"
-              autocomplete="off"
-              class="crit-name-input"
-            />
-            <button type="submit" class="crit-name-save">Save</button>
-          </form>
-        </div>
+        <%= if @current_user do %>
+          <div class="crit-user-pill">
+            <%= if @current_user.avatar_url do %>
+              <img
+                src={@current_user.avatar_url}
+                alt={@current_user.name || @current_user.email}
+                class="crit-user-avatar"
+              />
+            <% end %>
+            <span class="crit-user-name">{@current_user.name || @current_user.email}</span>
+            <.form for={%{}} action={~p"/auth/logout"} method="post" id="review-logout-form">
+              <input type="hidden" name="_method" value="delete" />
+              <button type="submit" class="crit-user-signout">Sign out</button>
+            </.form>
+          </div>
+        <% else %>
+          <div class="crit-name-pill" id="name-pill">
+            <button
+              type="button"
+              id="name-pill-btn"
+              phx-click={
+                JS.hide(to: "#name-pill-btn")
+                |> JS.show(to: "#name-form")
+                |> JS.focus(to: "#name-input")
+              }
+              class="crit-name-btn"
+            >
+              {if @display_name, do: @display_name, else: "Set your name"}
+            </button>
+            <form
+              id="name-form"
+              phx-submit={
+                JS.push("set_display_name")
+                |> JS.hide(to: "#name-form")
+                |> JS.show(to: "#name-pill-btn")
+              }
+              style="display:none"
+              class="crit-name-form"
+            >
+              <input
+                type="text"
+                id="name-input"
+                name="name"
+                value={@display_name || ""}
+                placeholder="Your name"
+                maxlength="40"
+                phx-keydown={JS.hide(to: "#name-form") |> JS.show(to: "#name-pill-btn")}
+                phx-key="Escape"
+                autocomplete="off"
+                class="crit-name-input"
+              />
+              <button type="submit" class="crit-name-save">Save</button>
+            </form>
+          </div>
+          <%= if @oauth_configured do %>
+            <a
+              href={~p"/auth/login?#{%{return_to: ~p"/r/#{@review.token}"}}"}
+              class="crit-signin-btn"
+            >
+              Sign in
+            </a>
+          <% end %>
+        <% end %>
         <span id="viewedCount" class="crit-viewed-count" style="display:none"></span>
         <button
           class="comment-count-btn"
@@ -257,25 +284,36 @@
     <ul class="crit-toc-list"></ul>
   </div>
 
-  <div id="crit-main-layout" class="crit-main-layout">
-    <div id="fileTreePanel" class="tree-panel" style="display:none">
-      <div class="tree-header">
-        <span class="tree-title">Files</span>
-        <span id="fileTreeStats" class="tree-stats"></span>
+  <%= if @auth_required and is_nil(@current_user) do %>
+    <div class="crit-auth-gate">
+      <div class="crit-auth-gate-inner">
+        <p class="crit-auth-gate-msg">Sign in to view this review</p>
+        <a href={~p"/auth/login?#{%{return_to: ~p"/r/#{@review.token}"}}"} class="crit-signin-btn">
+          Sign in
+        </a>
       </div>
-      <div id="fileTreeBody" class="tree-body"></div>
     </div>
+  <% else %>
+    <div id="crit-main-layout" class="crit-main-layout">
+      <div id="fileTreePanel" class="tree-panel" style="display:none">
+        <div class="tree-header">
+          <span class="tree-title">Files</span>
+          <span id="fileTreeStats" class="tree-stats"></span>
+        </div>
+        <div id="fileTreeBody" class="tree-body"></div>
+      </div>
 
-    <div class="crit-main-content">
-      <div
-        id="document-renderer"
-        phx-hook=".DocumentRenderer"
-        phx-update="ignore"
-        data-identity={@identity}
-        data-review-round={@review.review_round || 0}
-      >
-        <div class="crit-loading">Loading document...</div>
+      <div class="crit-main-content">
+        <div
+          id="document-renderer"
+          phx-hook=".DocumentRenderer"
+          phx-update="ignore"
+          data-identity={@identity}
+          data-review-round={@review.review_round || 0}
+        >
+          <div class="crit-loading">Loading document...</div>
+        </div>
       </div>
     </div>
-  </div>
+  <% end %>
 </div>

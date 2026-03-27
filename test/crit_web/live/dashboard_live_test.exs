@@ -13,6 +13,35 @@ defmodule CritWeb.DashboardLiveTest do
     end)
   end
 
+  defp login_user(conn) do
+    {conn, _user} = login_user_with_record(conn)
+    conn
+  end
+
+  defp login_user_with_record(conn) do
+    {:ok, user} =
+      Crit.Accounts.find_or_create_from_oauth("github", %{
+        "sub" => "test_uid_#{System.unique_integer()}",
+        "email" => "test@example.com",
+        "name" => "Test User"
+      })
+
+    {init_test_session(conn, %{user_id: user.id}), user}
+  end
+
+  defp without_oauth(ctx) do
+    original = Application.get_env(:crit, :oauth_provider)
+    Application.delete_env(:crit, :oauth_provider)
+
+    on_exit(fn ->
+      if original,
+        do: Application.put_env(:crit, :oauth_provider, original),
+        else: Application.delete_env(:crit, :oauth_provider)
+    end)
+
+    ctx
+  end
+
   describe "mount" do
     test "redirects to / when not in selfhosted mode", %{conn: conn} do
       Application.delete_env(:crit, :selfhosted)
@@ -32,9 +61,10 @@ defmodule CritWeb.DashboardLiveTest do
       assert html =~ "Activity"
     end
 
-    test "shows review list when no password set", %{conn: conn} do
-      review = review_fixture()
+    test "shows review list when no password and no oauth configured", %{conn: conn} do
+      without_oauth(%{})
 
+      review = review_fixture()
       {:ok, _view, html} = live(conn, ~p"/dashboard")
 
       assert html =~ "All Reviews"
@@ -51,14 +81,37 @@ defmodule CritWeb.DashboardLiveTest do
       {:ok, _view, html} = live(conn, ~p"/dashboard")
 
       assert html =~ "Sign in to view and manage reviews"
-      assert html =~ "password"
       refute html =~ "All Reviews"
     end
 
-    test "shows review list when authenticated", %{conn: conn} do
-      review = review_fixture()
+    test "shows password form when no OAuth configured", %{conn: conn} do
+      Application.delete_env(:crit, :oauth_provider)
 
-      conn = conn |> init_test_session(%{admin_authenticated: true})
+      on_exit(fn ->
+        Application.put_env(:crit, :oauth_provider,
+          strategy: Assent.Strategy.Github,
+          client_id: "test_github_client_id",
+          client_secret: "test_github_client_secret"
+        )
+      end)
+
+      {:ok, _view, html} = live(conn, ~p"/dashboard")
+
+      assert html =~ "password"
+      refute html =~ "Sign in with OAuth"
+    end
+
+    test "shows OAuth button and hides password form when OAuth configured", %{conn: conn} do
+      {:ok, _view, html} = live(conn, ~p"/dashboard")
+
+      assert html =~ "Sign in with OAuth"
+      refute html =~ "login-form"
+    end
+
+    test "shows review list when authenticated via OAuth", %{conn: conn} do
+      review = review_fixture()
+      conn = login_user(conn)
+
       {:ok, _view, html} = live(conn, ~p"/dashboard")
 
       assert html =~ "All Reviews"
@@ -83,6 +136,8 @@ defmodule CritWeb.DashboardLiveTest do
   end
 
   describe "delete_review" do
+    setup :without_oauth
+
     test "removes review from list", %{conn: conn} do
       review = review_fixture()
 
@@ -99,7 +154,61 @@ defmodule CritWeb.DashboardLiveTest do
     end
   end
 
+  describe "delete_review with OAuth" do
+    test "owner can delete their own review", %{conn: conn} do
+      {conn, user} = login_user_with_record(conn)
+      review = review_fixture(user_id: user.id)
+
+      {:ok, view, html} = live(conn, ~p"/dashboard")
+      assert html =~ hd(review.files).file_path
+
+      view
+      |> element("button[phx-value-id='#{review.id}']")
+      |> render_click()
+
+      refute render(view) =~ hd(review.files).file_path
+    end
+
+    test "user cannot delete another user's review", %{conn: conn} do
+      {:ok, other_user} =
+        Crit.Accounts.find_or_create_from_oauth("github", %{
+          "sub" => "other_uid_#{System.unique_integer()}",
+          "email" => "other@example.com",
+          "name" => "Other User"
+        })
+
+      review = review_fixture(user_id: other_user.id)
+      conn = login_user(conn)
+
+      {:ok, view, _html} = live(conn, ~p"/dashboard")
+
+      refute has_element?(view, "button[phx-value-id='#{review.id}']")
+
+      # Also verify the server-side guard rejects a crafted event
+      view
+      |> render_hook("delete_review", %{"id" => review.id})
+
+      assert render(view) =~ hd(review.files).file_path
+    end
+
+    test "any authenticated user can delete an ownerless review", %{conn: conn} do
+      review = review_fixture()
+      conn = login_user(conn)
+
+      {:ok, view, html} = live(conn, ~p"/dashboard")
+      assert html =~ hd(review.files).file_path
+
+      view
+      |> element("button[phx-value-id='#{review.id}']")
+      |> render_click()
+
+      refute render(view) =~ hd(review.files).file_path
+    end
+  end
+
   describe "review links" do
+    setup :without_oauth
+
     test "review rows link to /r/:token", %{conn: conn} do
       review = review_fixture()
 
@@ -110,10 +219,77 @@ defmodule CritWeb.DashboardLiveTest do
   end
 
   describe "empty state" do
+    setup :without_oauth
+
     test "shows message when no reviews", %{conn: conn} do
       {:ok, _view, html} = live(conn, ~p"/dashboard")
 
       assert html =~ "No reviews yet"
+    end
+  end
+
+  describe "API token management" do
+    test "shows token section when authenticated via OAuth", %{conn: conn} do
+      Application.put_env(:crit, :admin_password, "secret123")
+      conn = login_user(conn)
+
+      {:ok, _view, html} = live(conn, ~p"/dashboard")
+
+      assert html =~ "API Tokens"
+      assert html =~ "create-token-form"
+    end
+
+    test "creates a token and shows plaintext once", %{conn: conn} do
+      Application.put_env(:crit, :admin_password, "secret123")
+      conn = login_user(conn)
+
+      {:ok, view, _html} = live(conn, ~p"/dashboard")
+
+      view
+      |> element("#create-token-form")
+      |> render_submit(%{name: "my laptop"})
+
+      html = render(view)
+      assert html =~ "my laptop"
+      assert html =~ "copy it now"
+      assert html =~ "crit_"
+    end
+
+    test "revokes a token", %{conn: conn} do
+      Application.put_env(:crit, :admin_password, "secret123")
+      {conn, user} = login_user_with_record(conn)
+
+      {:ok, _token_plaintext, token} =
+        Crit.Accounts.create_token(user, "to revoke") |> then(fn {:ok, {p, t}} -> {:ok, p, t} end)
+
+      {:ok, view, html} = live(conn, ~p"/dashboard")
+      assert html =~ "to revoke"
+
+      view
+      |> element("button[phx-value-id='#{token.id}']")
+      |> render_click()
+
+      html = render(view)
+      refute html =~ "to revoke"
+    end
+
+    test "dismisses the new token reveal", %{conn: conn} do
+      Application.put_env(:crit, :admin_password, "secret123")
+      conn = login_user(conn)
+
+      {:ok, view, _html} = live(conn, ~p"/dashboard")
+
+      view
+      |> element("#create-token-form")
+      |> render_submit(%{name: "temp"})
+
+      assert render(view) =~ "copy it now"
+
+      view
+      |> element("button[phx-click='dismiss_token']")
+      |> render_click()
+
+      refute render(view) =~ "copy it now"
     end
   end
 end

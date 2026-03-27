@@ -1,15 +1,39 @@
 defmodule CritWeb.ReviewLive do
   use CritWeb, :live_view
 
-  alias Crit.Reviews
+  alias Crit.{Accounts, Reviews}
 
   @pubsub Crit.PubSub
 
   @impl true
   def mount(%{"token" => token}, session, socket) do
-    identity = Map.get(session, "identity", Ecto.UUID.generate())
-    display_name = Map.get(session, "display_name")
+    current_user =
+      case Map.get(session, "user_id") do
+        nil ->
+          nil
 
+        user_id ->
+          case Accounts.get_user(user_id) do
+            {:ok, user} -> user
+            {:error, :not_found} -> nil
+          end
+      end
+
+    auth_required =
+      Application.get_env(:crit, :selfhosted) == true &&
+        Application.get_env(:crit, :oauth_provider) != nil
+
+    {identity, display_name} =
+      if current_user do
+        {current_user.id, current_user.name || current_user.email}
+      else
+        {Map.get(session, "identity", Ecto.UUID.generate()), Map.get(session, "display_name")}
+      end
+
+    mount_review(token, socket, current_user, identity, display_name, auth_required)
+  end
+
+  defp mount_review(token, socket, current_user, identity, display_name, auth_required) do
     case Reviews.get_by_token(token) do
       nil ->
         {:ok,
@@ -45,8 +69,15 @@ defmodule CritWeb.ReviewLive do
 
         file_paths = review.files |> Enum.map(& &1.file_path) |> Enum.join(" ")
 
+        auth_note =
+          if auth_required do
+            " The server requires authentication — include the header `Authorization: Bearer <token>` in all fetch requests, where <token> is your API token from the dashboard. You can also set CRIT_AUTH_TOKEN in your environment or add `\"auth_token\": \"<token>\"` to ~/.crit.config.json — `crit share` reads this automatically."
+          else
+            ""
+          end
+
         local_prompt_text =
-          "Please fetch #{comments_url} — these are review comments from crit. " <>
+          "Please fetch #{comments_url} — these are review comments from crit.#{auth_note} " <>
             "Comments are grouped per file with start_line/end_line referencing the source. " <>
             "Read each comment, address it in the relevant file and location, " <>
             "then run `crit share #{file_paths}` to sync the updated files back and signal the review is ready for the next round."
@@ -55,11 +86,14 @@ defmodule CritWeb.ReviewLive do
 
         full_export_prompt_text =
           "Please fetch #{export_url} — this contains the full plan with review comments " <>
-            "interjected inline. Implement the plan while addressing each review comment."
+            "interjected inline.#{auth_note} Implement the plan while addressing each review comment."
 
         {:ok,
          socket
          |> assign(:review, review)
+         |> assign(:current_user, current_user)
+         |> assign(:oauth_configured, Application.get_env(:crit, :oauth_provider) != nil)
+         |> assign(:auth_required, auth_required)
          |> assign(:identity, identity)
          |> assign(:display_name, display_name)
          |> assign(:demo?, demo?)
@@ -69,10 +103,20 @@ defmodule CritWeb.ReviewLive do
          |> assign(:show_round_diff, false)
          |> assign(:prev_round_snapshots, %{})
          |> assign(:diff_mode, "split")
-         |> assign(:page_title, display_filename(review))
+         |> assign(
+           :page_title,
+           if(auth_required && is_nil(current_user),
+             do: "Review - Crit",
+             else: display_filename(review)
+           )
+         )
          |> assign(
            :meta_description,
-           "Shared review of #{display_filename(review)} on Crit. View inline comments and add your own feedback."
+           if(auth_required && is_nil(current_user),
+             do: "Sign in to view this review on Crit.",
+             else:
+               "Shared review of #{display_filename(review)} on Crit. View inline comments and add your own feedback."
+           )
          )
          |> assign(:noindex, true)
          |> assign(:og_type, "article")
@@ -295,6 +339,11 @@ defmodule CritWeb.ReviewLive do
 
       %{c | replies: filtered_replies}
     end)
+  end
+
+  @doc false
+  def session_opts(conn) do
+    %{"user_id" => Plug.Conn.get_session(conn, :user_id)}
   end
 
   defp display_filename(%{files: [first | _]}), do: first.file_path
