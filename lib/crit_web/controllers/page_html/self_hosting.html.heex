@@ -99,7 +99,7 @@
             <div class="w-2.5 h-2.5 rounded-full bg-(--crit-fg-dimmed) opacity-40"></div>
             <div class="w-2.5 h-2.5 rounded-full bg-(--crit-fg-dimmed) opacity-40"></div>
           </div>
-          <span class="font-mono text-[11px] text-(--crit-fg-muted) ml-2">Terminal</span>
+          <span class="font-mono text-xs text-(--crit-fg-muted) ml-2">Terminal</span>
         </div>
         <div class="bg-(--crit-code-bg) p-5 font-mono text-sm leading-7 text-(--crit-fg-secondary)">
           <div class="text-(--crit-fg-muted) text-xs mb-2 select-none">
@@ -132,11 +132,11 @@
 
       <p class="text-sm text-(--crit-fg-muted) mt-3 leading-relaxed">
         Set
-        <code class="text-[0.9em] bg-(--crit-bg-tertiary) px-1 py-0.5 rounded">
+        <code class="text-xs bg-(--crit-bg-tertiary) px-1 py-0.5 rounded">
           SECRET_KEY_BASE
         </code>
-        and <code class="text-[0.9em] bg-(--crit-bg-tertiary) px-1 py-0.5 rounded">PHX_HOST</code>
-        in your <code class="text-[0.9em] bg-(--crit-bg-tertiary) px-1 py-0.5 rounded">.env</code>
+        and <code class="text-xs bg-(--crit-bg-tertiary) px-1 py-0.5 rounded">PHX_HOST</code>
+        in your <code class="text-xs bg-(--crit-bg-tertiary) px-1 py-0.5 rounded">.env</code>
         file.
       </p>
     </section>
@@ -162,7 +162,7 @@
             <div class="w-2.5 h-2.5 rounded-full bg-(--crit-fg-dimmed) opacity-40"></div>
             <div class="w-2.5 h-2.5 rounded-full bg-(--crit-fg-dimmed) opacity-40"></div>
           </div>
-          <span class="font-mono text-[11px] text-(--crit-fg-muted) ml-2">Terminal</span>
+          <span class="font-mono text-xs text-(--crit-fg-muted) ml-2">Terminal</span>
         </div>
         <div class="bg-(--crit-code-bg) p-5 font-mono text-sm leading-7 text-(--crit-fg-secondary)">
           <div>
@@ -195,264 +195,256 @@
         <div>
           <h2 class="text-lg font-semibold tracking-tight">Environment variables</h2>
           <p class="text-sm text-(--crit-fg-muted) mt-0.5">
-            All configuration lives in <code class="text-[0.9em] bg-(--crit-bg-tertiary) px-1 py-0.5 rounded">.env</code>.
+            All configuration lives in <code class="text-xs bg-(--crit-bg-tertiary) px-1 py-0.5 rounded">.env</code>.
           </p>
         </div>
       </div>
 
-      <div class="border border-(--crit-border) rounded-lg overflow-hidden">
+      <%!-- Table column headers --%>
+      <div class="hidden sm:grid grid-cols-[minmax(160px,220px)_1fr_80px] gap-x-4 px-4 pb-2 text-xs font-mono tracking-widest uppercase text-(--crit-fg-dimmed)">
+        <span>Variable</span>
+        <span>Description</span>
+        <span class="text-right">Required</span>
+      </div>
+
+      <%!-- Database group --%>
+      <div class="border border-(--crit-border) rounded-lg overflow-hidden mb-3">
+        <div class="px-4 py-2 bg-(--crit-bg-tertiary) border-b border-(--crit-border)">
+          <span class="text-xs font-mono tracking-widest uppercase text-(--crit-fg-dimmed)">
+            Database
+          </span>
+        </div>
+        <div class="px-4 py-2.5 bg-(--crit-bg-secondary) border-b border-(--crit-border) flex items-center gap-2">
+          <span class="text-(--crit-accent) text-sm leading-none select-none">&#9432;</span>
+          <p class="text-sm text-(--crit-fg-secondary)">
+            Set <code class="text-xs bg-(--crit-bg-tertiary) px-1 rounded">DATABASE_URL</code>
+            <em>or</em>
+            all four of <code class="text-xs bg-(--crit-bg-tertiary) px-1 rounded">DB_HOST</code>, <code class="text-xs bg-(--crit-bg-tertiary) px-1 rounded">DB_USER</code>, <code class="text-xs bg-(--crit-bg-tertiary) px-1 rounded">DB_PASSWORD</code>, <code class="text-xs bg-(--crit-bg-tertiary) px-1 rounded">DB_NAME</code>.
+          </p>
+        </div>
         <div class="divide-y divide-(--crit-border)">
-          <div class="flex items-start gap-4 p-4 bg-(--crit-bg-secondary)">
-            <code class="text-sm font-mono bg-(--crit-bg-tertiary) px-2 py-0.5 rounded shrink-0">
-              DATABASE_URL
-            </code>
-            <div class="flex-1 min-w-0">
-              <p class="text-sm text-(--crit-fg-secondary)">
-                PostgreSQL connection URL, e.g. <code class="text-[0.9em]">ecto://user:pass@host/db</code>. Use this
-                <em>or</em>
-                the individual <code class="text-[0.9em]">DB_*</code>
-                vars below.
-              </p>
-            </div>
-            <span class="text-xs font-mono text-(--crit-accent) shrink-0">required*</span>
-          </div>
-          <div class="flex items-start gap-4 p-4 bg-(--crit-bg-secondary)">
-            <code class="text-sm font-mono bg-(--crit-bg-tertiary) px-2 py-0.5 rounded shrink-0">
-              DB_HOST
-            </code>
-            <div class="flex-1 min-w-0">
-              <p class="text-sm text-(--crit-fg-secondary)">
-                Database host — use with <code class="text-[0.9em]">DB_USER</code>, <code class="text-[0.9em]">DB_PASSWORD</code>,
-                <code class="text-[0.9em]">DB_NAME</code>
-                as an alternative to <code class="text-[0.9em]">DATABASE_URL</code>
-              </p>
-            </div>
-            <span class="text-xs font-mono text-(--crit-accent) shrink-0">required*</span>
-          </div>
-          <div class="flex items-start gap-4 p-4 bg-(--crit-bg-secondary)">
-            <code class="text-sm font-mono bg-(--crit-bg-tertiary) px-2 py-0.5 rounded shrink-0">
-              DB_USER
-            </code>
-            <div class="flex-1 min-w-0">
-              <p class="text-sm text-(--crit-fg-secondary)">Database user</p>
-            </div>
-            <span class="text-xs font-mono text-(--crit-accent) shrink-0">required*</span>
-          </div>
-          <div class="flex items-start gap-4 p-4 bg-(--crit-bg-secondary)">
-            <code class="text-sm font-mono bg-(--crit-bg-tertiary) px-2 py-0.5 rounded shrink-0">
-              DB_PASSWORD
-            </code>
-            <div class="flex-1 min-w-0">
-              <p class="text-sm text-(--crit-fg-secondary)">Database password</p>
-            </div>
-            <span class="text-xs font-mono text-(--crit-accent) shrink-0">required*</span>
-          </div>
-          <div class="flex items-start gap-4 p-4 bg-(--crit-bg-secondary)">
-            <code class="text-sm font-mono bg-(--crit-bg-tertiary) px-2 py-0.5 rounded shrink-0">
-              DB_NAME
-            </code>
-            <div class="flex-1 min-w-0">
-              <p class="text-sm text-(--crit-fg-secondary)">Database name</p>
-            </div>
-            <span class="text-xs font-mono text-(--crit-accent) shrink-0">required*</span>
-          </div>
-          <div class="flex items-start gap-4 p-4 bg-(--crit-bg-secondary)">
-            <code class="text-sm font-mono bg-(--crit-bg-tertiary) px-2 py-0.5 rounded shrink-0">
-              DB_PORT
-            </code>
-            <div class="flex-1 min-w-0">
-              <p class="text-sm text-(--crit-fg-secondary)">Database port (default: 5432)</p>
-            </div>
-            <span class="text-xs font-mono text-(--crit-fg-muted) shrink-0">optional</span>
-          </div>
-          <div class="flex items-start gap-4 p-4 bg-(--crit-bg-secondary)">
-            <code class="text-sm font-mono bg-(--crit-bg-tertiary) px-2 py-0.5 rounded shrink-0">
-              DB_SSL
-            </code>
-            <div class="flex-1 min-w-0">
-              <p class="text-sm text-(--crit-fg-secondary)">
-                Set to <code class="text-[0.9em]">true</code>
-                to enable SSL. Without <code class="text-[0.9em]">DB_SSL_CA_CERT</code>, connects
-                encrypted without certificate verification — recommended for AWS RDS
-              </p>
-            </div>
-            <span class="text-xs font-mono text-(--crit-fg-muted) shrink-0">optional</span>
-          </div>
-          <div class="flex items-start gap-4 p-4 bg-(--crit-bg-secondary)">
-            <code class="text-sm font-mono bg-(--crit-bg-tertiary) px-2 py-0.5 rounded shrink-0">
-              DB_SSL_CA_CERT
-            </code>
-            <div class="flex-1 min-w-0">
-              <p class="text-sm text-(--crit-fg-secondary)">
-                Path to a CA certificate file. When set alongside <code class="text-[0.9em]">DB_SSL=true</code>, enables full
-                <code class="text-[0.9em]">verify_peer</code>
-                verification. In Docker, mount the file as a volume and pass the container path
-              </p>
-            </div>
-            <span class="text-xs font-mono text-(--crit-fg-muted) shrink-0">optional</span>
-          </div>
-          <div class="flex items-start gap-4 p-4 bg-(--crit-bg-secondary)">
-            <code class="text-sm font-mono bg-(--crit-bg-tertiary) px-2 py-0.5 rounded shrink-0">
-              SECRET_KEY_BASE
-            </code>
-            <div class="flex-1 min-w-0">
-              <p class="text-sm text-(--crit-fg-secondary)">
-                64+ byte secret for signing cookies
-              </p>
-            </div>
-            <span class="text-xs font-mono text-(--crit-accent) shrink-0">required</span>
-          </div>
-          <div class="flex items-start gap-4 p-4 bg-(--crit-bg-secondary)">
-            <code class="text-sm font-mono bg-(--crit-bg-tertiary) px-2 py-0.5 rounded shrink-0">
-              SELFHOSTED
-            </code>
-            <div class="flex-1 min-w-0">
-              <p class="text-sm text-(--crit-fg-secondary)">
-                Set to <code class="text-[0.9em]">true</code>
-                to enable self-hosted mode (dashboard, no marketing pages)
-              </p>
-            </div>
-            <span class="text-xs font-mono text-(--crit-accent) shrink-0">required</span>
-          </div>
-          <div class="flex items-start gap-4 p-4 bg-(--crit-bg-secondary)">
-            <code class="text-sm font-mono bg-(--crit-bg-tertiary) px-2 py-0.5 rounded shrink-0">
-              PHX_HOST
-            </code>
-            <div class="flex-1 min-w-0">
-              <p class="text-sm text-(--crit-fg-secondary)">Hostname where crit-web is served</p>
-            </div>
-            <span class="text-xs font-mono text-(--crit-accent) shrink-0">required</span>
-          </div>
-          <div class="flex items-start gap-4 p-4 bg-(--crit-bg-secondary)">
-            <code class="text-sm font-mono bg-(--crit-bg-tertiary) px-2 py-0.5 rounded shrink-0">
-              PHX_SERVER
-            </code>
-            <div class="flex-1 min-w-0">
-              <p class="text-sm text-(--crit-fg-secondary)">
-                Set to <code class="text-[0.9em]">true</code> to start the web server
-              </p>
-            </div>
-            <span class="text-xs font-mono text-(--crit-accent) shrink-0">required</span>
-          </div>
-          <div class="flex items-start gap-4 p-4 bg-(--crit-bg-secondary)">
-            <code class="text-sm font-mono bg-(--crit-bg-tertiary) px-2 py-0.5 rounded shrink-0">
-              ADMIN_PASSWORD
-            </code>
-            <div class="flex-1 min-w-0">
-              <p class="text-sm text-(--crit-fg-secondary)">
-                Password for the admin dashboard (if unset and no OAuth configured, dashboard is open)
-              </p>
-            </div>
-            <span class="text-xs font-mono text-(--crit-fg-muted) shrink-0">optional</span>
-          </div>
-          <div class="flex items-start gap-4 p-4 bg-(--crit-bg-secondary)">
-            <code class="text-sm font-mono bg-(--crit-bg-tertiary) px-2 py-0.5 rounded shrink-0">
-              GITHUB_CLIENT_ID
-            </code>
-            <div class="flex-1 min-w-0">
-              <p class="text-sm text-(--crit-fg-secondary)">
-                GitHub OAuth App client ID. Set alongside
-                <code class="text-[0.9em]">GITHUB_CLIENT_SECRET</code>
-                to enable GitHub login. When set, OAuth is required to access the dashboard and view reviews
-              </p>
-            </div>
-            <span class="text-xs font-mono text-(--crit-fg-muted) shrink-0">optional</span>
-          </div>
-          <div class="flex items-start gap-4 p-4 bg-(--crit-bg-secondary)">
-            <code class="text-sm font-mono bg-(--crit-bg-tertiary) px-2 py-0.5 rounded shrink-0">
-              GITHUB_CLIENT_SECRET
-            </code>
-            <div class="flex-1 min-w-0">
-              <p class="text-sm text-(--crit-fg-secondary)">
-                GitHub OAuth App client secret
-              </p>
-            </div>
-            <span class="text-xs font-mono text-(--crit-fg-muted) shrink-0">optional</span>
-          </div>
-          <div class="flex items-start gap-4 p-4 bg-(--crit-bg-secondary)">
-            <code class="text-sm font-mono bg-(--crit-bg-tertiary) px-2 py-0.5 rounded shrink-0">
-              OAUTH_CLIENT_ID
-            </code>
-            <div class="flex-1 min-w-0">
-              <p class="text-sm text-(--crit-fg-secondary)">
-                Generic OIDC/OAuth2 client ID. Use with
-                <code class="text-[0.9em]">OAUTH_CLIENT_SECRET</code>
-                and <code class="text-[0.9em]">OAUTH_BASE_URL</code>
-                for providers like Google, GitLab, or Okta. Mutually exclusive with
-                <code class="text-[0.9em]">GITHUB_CLIENT_ID</code>
-              </p>
-            </div>
-            <span class="text-xs font-mono text-(--crit-fg-muted) shrink-0">optional</span>
-          </div>
-          <div class="flex items-start gap-4 p-4 bg-(--crit-bg-secondary)">
-            <code class="text-sm font-mono bg-(--crit-bg-tertiary) px-2 py-0.5 rounded shrink-0">
-              OAUTH_CLIENT_SECRET
-            </code>
-            <div class="flex-1 min-w-0">
-              <p class="text-sm text-(--crit-fg-secondary)">Generic OAuth2 client secret</p>
-            </div>
-            <span class="text-xs font-mono text-(--crit-fg-muted) shrink-0">optional</span>
-          </div>
-          <div class="flex items-start gap-4 p-4 bg-(--crit-bg-secondary)">
-            <code class="text-sm font-mono bg-(--crit-bg-tertiary) px-2 py-0.5 rounded shrink-0">
-              OAUTH_BASE_URL
-            </code>
-            <div class="flex-1 min-w-0">
-              <p class="text-sm text-(--crit-fg-secondary)">
-                OIDC discovery base URL, e.g.
-                <code class="text-[0.9em]">https://accounts.google.com</code>
-              </p>
-            </div>
-            <span class="text-xs font-mono text-(--crit-fg-muted) shrink-0">optional</span>
-          </div>
-          <div class="flex items-start gap-4 p-4 bg-(--crit-bg-secondary)">
-            <code class="text-sm font-mono bg-(--crit-bg-tertiary) px-2 py-0.5 rounded shrink-0">
-              PORT
-            </code>
-            <div class="flex-1 min-w-0">
-              <p class="text-sm text-(--crit-fg-secondary)">HTTP port (default: 4000)</p>
-            </div>
-            <span class="text-xs font-mono text-(--crit-fg-muted) shrink-0">optional</span>
-          </div>
-          <div class="flex items-start gap-4 p-4 bg-(--crit-bg-secondary)">
-            <code class="text-sm font-mono bg-(--crit-bg-tertiary) px-2 py-0.5 rounded shrink-0">
-              PHX_SCHEME
-            </code>
-            <div class="flex-1 min-w-0">
-              <p class="text-sm text-(--crit-fg-secondary)">
-                URL scheme for generated links (default: https)
-              </p>
-            </div>
-            <span class="text-xs font-mono text-(--crit-fg-muted) shrink-0">optional</span>
-          </div>
-          <div class="flex items-start gap-4 p-4 bg-(--crit-bg-secondary)">
-            <code class="text-sm font-mono bg-(--crit-bg-tertiary) px-2 py-0.5 rounded shrink-0">
-              FORCE_SSL
-            </code>
-            <div class="flex-1 min-w-0">
-              <p class="text-sm text-(--crit-fg-secondary)">
-                Set to <code class="text-[0.9em]">true</code>
-                to force HTTPS redirects (not needed behind a reverse proxy)
-              </p>
-            </div>
-            <span class="text-xs font-mono text-(--crit-fg-muted) shrink-0">optional</span>
-          </div>
-          <div class="flex items-start gap-4 p-4 bg-(--crit-bg-secondary)">
-            <code class="text-sm font-mono bg-(--crit-bg-tertiary) px-2 py-0.5 rounded shrink-0">
-              POOL_SIZE
-            </code>
-            <div class="flex-1 min-w-0">
-              <p class="text-sm text-(--crit-fg-secondary)">
-                Database connection pool size (default: 10)
-              </p>
-            </div>
-            <span class="text-xs font-mono text-(--crit-fg-muted) shrink-0">optional</span>
-          </div>
-          <div class="px-4 py-3 bg-(--crit-bg-primary) border-t border-(--crit-border)">
-            <p class="text-xs text-(--crit-fg-muted)">
-              * Set either <code class="text-[0.9em]">DATABASE_URL</code>
-              or all four of <code class="text-[0.9em]">DB_HOST</code>, <code class="text-[0.9em]">DB_USER</code>, <code class="text-[0.9em]">DB_PASSWORD</code>, <code class="text-[0.9em]">DB_NAME</code>.
+          <div class="grid grid-cols-[minmax(160px,220px)_1fr_80px] gap-x-4 items-baseline px-4 py-3 bg-(--crit-bg-secondary) max-sm:grid-cols-1 max-sm:gap-y-1">
+            <code class="text-sm font-mono text-(--crit-fg-primary)">DATABASE_URL</code>
+            <p class="text-sm text-(--crit-fg-secondary)">
+              PostgreSQL connection URL, e.g. <code class="text-xs bg-(--crit-bg-tertiary) px-1 rounded">ecto://user:pass@host/db</code>. Use this
+              <em>or</em>
+              the individual
+              <code class="text-xs bg-(--crit-bg-tertiary) px-1 rounded">DB_*</code>
+              vars.
             </p>
+            <span class="text-xs font-mono text-(--crit-accent) sm:text-right">required*</span>
+          </div>
+          <div class="grid grid-cols-[minmax(160px,220px)_1fr_80px] gap-x-4 items-baseline px-4 py-3 bg-(--crit-bg-secondary) max-sm:grid-cols-1 max-sm:gap-y-1">
+            <code class="text-sm font-mono text-(--crit-fg-primary)">DB_HOST</code>
+            <p class="text-sm text-(--crit-fg-secondary)">
+              Database host — alternative to
+              <code class="text-xs bg-(--crit-bg-tertiary) px-1 rounded">DATABASE_URL</code>
+            </p>
+            <span class="text-xs font-mono text-(--crit-accent) sm:text-right">required*</span>
+          </div>
+          <div class="grid grid-cols-[minmax(160px,220px)_1fr_80px] gap-x-4 items-baseline px-4 py-3 bg-(--crit-bg-secondary) max-sm:grid-cols-1 max-sm:gap-y-1">
+            <code class="text-sm font-mono text-(--crit-fg-primary)">DB_USER</code>
+            <p class="text-sm text-(--crit-fg-secondary)">Database user</p>
+            <span class="text-xs font-mono text-(--crit-accent) sm:text-right">required*</span>
+          </div>
+          <div class="grid grid-cols-[minmax(160px,220px)_1fr_80px] gap-x-4 items-baseline px-4 py-3 bg-(--crit-bg-secondary) max-sm:grid-cols-1 max-sm:gap-y-1">
+            <code class="text-sm font-mono text-(--crit-fg-primary)">DB_PASSWORD</code>
+            <p class="text-sm text-(--crit-fg-secondary)">Database password</p>
+            <span class="text-xs font-mono text-(--crit-accent) sm:text-right">required*</span>
+          </div>
+          <div class="grid grid-cols-[minmax(160px,220px)_1fr_80px] gap-x-4 items-baseline px-4 py-3 bg-(--crit-bg-secondary) max-sm:grid-cols-1 max-sm:gap-y-1">
+            <code class="text-sm font-mono text-(--crit-fg-primary)">DB_NAME</code>
+            <p class="text-sm text-(--crit-fg-secondary)">Database name</p>
+            <span class="text-xs font-mono text-(--crit-accent) sm:text-right">required*</span>
+          </div>
+          <div class="grid grid-cols-[minmax(160px,220px)_1fr_80px] gap-x-4 items-baseline px-4 py-3 bg-(--crit-bg-secondary) max-sm:grid-cols-1 max-sm:gap-y-1">
+            <div>
+              <code class="text-sm font-mono text-(--crit-fg-primary)">DB_PORT</code>
+              <span class="ml-2 text-xs font-mono text-(--crit-fg-dimmed)">5432</span>
+            </div>
+            <p class="text-sm text-(--crit-fg-secondary)">Database port</p>
+            <span class="text-xs font-mono text-(--crit-fg-dimmed) sm:text-right">optional</span>
+          </div>
+          <div class="grid grid-cols-[minmax(160px,220px)_1fr_80px] gap-x-4 items-baseline px-4 py-3 bg-(--crit-bg-secondary) max-sm:grid-cols-1 max-sm:gap-y-1">
+            <div>
+              <code class="text-sm font-mono text-(--crit-fg-primary)">DB_SSL</code>
+              <span class="ml-2 text-xs font-mono text-(--crit-fg-dimmed)">false</span>
+            </div>
+            <p class="text-sm text-(--crit-fg-secondary)">
+              Set to <code class="text-xs bg-(--crit-bg-tertiary) px-1 rounded">true</code>
+              to enable SSL. Without <code class="text-xs bg-(--crit-bg-tertiary) px-1 rounded">DB_SSL_CA_CERT</code>, connects encrypted without certificate verification (recommended for AWS RDS)
+            </p>
+            <span class="text-xs font-mono text-(--crit-fg-dimmed) sm:text-right">optional</span>
+          </div>
+          <div class="grid grid-cols-[minmax(160px,220px)_1fr_80px] gap-x-4 items-baseline px-4 py-3 bg-(--crit-bg-secondary) max-sm:grid-cols-1 max-sm:gap-y-1">
+            <code class="text-sm font-mono text-(--crit-fg-primary)">DB_SSL_CA_CERT</code>
+            <p class="text-sm text-(--crit-fg-secondary)">
+              Path to a CA certificate file. When set alongside <code class="text-xs bg-(--crit-bg-tertiary) px-1 rounded">DB_SSL=true</code>, enables full
+              <code class="text-xs bg-(--crit-bg-tertiary) px-1 rounded">verify_peer</code>
+              verification. In Docker, mount the file as a volume and pass the container path.
+            </p>
+            <span class="text-xs font-mono text-(--crit-fg-dimmed) sm:text-right">optional</span>
+          </div>
+          <div class="grid grid-cols-[minmax(160px,220px)_1fr_80px] gap-x-4 items-baseline px-4 py-3 bg-(--crit-bg-secondary) max-sm:grid-cols-1 max-sm:gap-y-1">
+            <div>
+              <code class="text-sm font-mono text-(--crit-fg-primary)">POOL_SIZE</code>
+              <span class="ml-2 text-xs font-mono text-(--crit-fg-dimmed)">10</span>
+            </div>
+            <p class="text-sm text-(--crit-fg-secondary)">Database connection pool size</p>
+            <span class="text-xs font-mono text-(--crit-fg-dimmed) sm:text-right">optional</span>
+          </div>
+        </div>
+      </div>
+
+      <%!-- Application group --%>
+      <div class="border border-(--crit-border) rounded-lg overflow-hidden mb-3">
+        <div class="px-4 py-2 bg-(--crit-bg-tertiary) border-b border-(--crit-border)">
+          <span class="text-xs font-mono tracking-widest uppercase text-(--crit-fg-dimmed)">
+            Application
+          </span>
+        </div>
+        <div class="divide-y divide-(--crit-border)">
+          <div class="grid grid-cols-[minmax(160px,220px)_1fr_80px] gap-x-4 items-baseline px-4 py-3 bg-(--crit-bg-secondary) max-sm:grid-cols-1 max-sm:gap-y-1">
+            <code class="text-sm font-mono text-(--crit-fg-primary)">SECRET_KEY_BASE</code>
+            <p class="text-sm text-(--crit-fg-secondary)">
+              64+ byte secret for signing cookies. Generate with
+              <code class="text-xs bg-(--crit-bg-tertiary) px-1 rounded">
+                openssl rand -base64 64
+              </code>
+            </p>
+            <span class="text-xs font-mono text-(--crit-accent) sm:text-right">required</span>
+          </div>
+          <div class="grid grid-cols-[minmax(160px,220px)_1fr_80px] gap-x-4 items-baseline px-4 py-3 bg-(--crit-bg-secondary) max-sm:grid-cols-1 max-sm:gap-y-1">
+            <code class="text-sm font-mono text-(--crit-fg-primary)">PHX_HOST</code>
+            <p class="text-sm text-(--crit-fg-secondary)">
+              Hostname where crit-web is served, e.g.
+              <code class="text-xs bg-(--crit-bg-tertiary) px-1 rounded">crit.example.com</code>
+            </p>
+            <span class="text-xs font-mono text-(--crit-accent) sm:text-right">required</span>
+          </div>
+          <div class="grid grid-cols-[minmax(160px,220px)_1fr_80px] gap-x-4 items-baseline px-4 py-3 bg-(--crit-bg-secondary) max-sm:grid-cols-1 max-sm:gap-y-1">
+            <code class="text-sm font-mono text-(--crit-fg-primary)">PHX_SERVER</code>
+            <p class="text-sm text-(--crit-fg-secondary)">
+              Set to <code class="text-xs bg-(--crit-bg-tertiary) px-1 rounded">true</code>
+              to start the web server
+            </p>
+            <span class="text-xs font-mono text-(--crit-accent) sm:text-right">required</span>
+          </div>
+          <div class="grid grid-cols-[minmax(160px,220px)_1fr_80px] gap-x-4 items-baseline px-4 py-3 bg-(--crit-bg-secondary) max-sm:grid-cols-1 max-sm:gap-y-1">
+            <code class="text-sm font-mono text-(--crit-fg-primary)">SELFHOSTED</code>
+            <p class="text-sm text-(--crit-fg-secondary)">
+              Set to <code class="text-xs bg-(--crit-bg-tertiary) px-1 rounded">true</code>
+              to enable self-hosted mode (dashboard, no marketing pages)
+            </p>
+            <span class="text-xs font-mono text-(--crit-accent) sm:text-right">required</span>
+          </div>
+          <div class="grid grid-cols-[minmax(160px,220px)_1fr_80px] gap-x-4 items-baseline px-4 py-3 bg-(--crit-bg-secondary) max-sm:grid-cols-1 max-sm:gap-y-1">
+            <code class="text-sm font-mono text-(--crit-fg-primary)">ADMIN_PASSWORD</code>
+            <p class="text-sm text-(--crit-fg-secondary)">
+              Password for the admin dashboard. If unset and no OAuth configured, dashboard is open to anyone.
+            </p>
+            <span class="text-xs font-mono text-(--crit-fg-dimmed) sm:text-right">optional</span>
+          </div>
+        </div>
+      </div>
+
+      <%!-- OAuth group --%>
+      <div class="border border-(--crit-border) rounded-lg overflow-hidden mb-3">
+        <div class="px-4 py-2 bg-(--crit-bg-tertiary) border-b border-(--crit-border)">
+          <span class="text-xs font-mono tracking-widest uppercase text-(--crit-fg-dimmed)">
+            OAuth
+          </span>
+        </div>
+        <div class="px-4 py-2.5 bg-(--crit-bg-secondary) border-b border-(--crit-border) flex items-center gap-2">
+          <span class="text-(--crit-accent) text-sm leading-none select-none">&#9432;</span>
+          <p class="text-sm text-(--crit-fg-secondary)">
+            Use <code class="text-xs bg-(--crit-bg-tertiary) px-1 rounded">GITHUB_*</code>
+            or <code class="text-xs bg-(--crit-bg-tertiary) px-1 rounded">OAUTH_*</code>
+            — not both.
+            When either is set, OAuth login is required to access the dashboard and view reviews.
+          </p>
+        </div>
+        <div class="divide-y divide-(--crit-border)">
+          <div class="grid grid-cols-[minmax(160px,220px)_1fr_80px] gap-x-4 items-baseline px-4 py-3 bg-(--crit-bg-secondary) max-sm:grid-cols-1 max-sm:gap-y-1">
+            <code class="text-sm font-mono text-(--crit-fg-primary)">GITHUB_CLIENT_ID</code>
+            <p class="text-sm text-(--crit-fg-secondary)">
+              GitHub OAuth App client ID. Set alongside
+              <code class="text-xs bg-(--crit-bg-tertiary) px-1 rounded">
+                GITHUB_CLIENT_SECRET
+              </code>
+              to enable GitHub login. When set, OAuth is required to access the dashboard and view reviews.
+            </p>
+            <span class="text-xs font-mono text-(--crit-fg-dimmed) sm:text-right">optional</span>
+          </div>
+          <div class="grid grid-cols-[minmax(160px,220px)_1fr_80px] gap-x-4 items-baseline px-4 py-3 bg-(--crit-bg-secondary) max-sm:grid-cols-1 max-sm:gap-y-1">
+            <code class="text-sm font-mono text-(--crit-fg-primary)">GITHUB_CLIENT_SECRET</code>
+            <p class="text-sm text-(--crit-fg-secondary)">GitHub OAuth App client secret</p>
+            <span class="text-xs font-mono text-(--crit-fg-dimmed) sm:text-right">optional</span>
+          </div>
+          <div class="grid grid-cols-[minmax(160px,220px)_1fr_80px] gap-x-4 items-baseline px-4 py-3 bg-(--crit-bg-secondary) max-sm:grid-cols-1 max-sm:gap-y-1">
+            <code class="text-sm font-mono text-(--crit-fg-primary)">OAUTH_CLIENT_ID</code>
+            <p class="text-sm text-(--crit-fg-secondary)">
+              Generic OIDC/OAuth2 client ID. Use with
+              <code class="text-xs bg-(--crit-bg-tertiary) px-1 rounded">
+                OAUTH_CLIENT_SECRET
+              </code>
+              and <code class="text-xs bg-(--crit-bg-tertiary) px-1 rounded">OAUTH_BASE_URL</code>
+              for providers like Google, GitLab, or Okta. Mutually exclusive with <code class="text-xs bg-(--crit-bg-tertiary) px-1 rounded">GITHUB_CLIENT_ID</code>.
+            </p>
+            <span class="text-xs font-mono text-(--crit-fg-dimmed) sm:text-right">optional</span>
+          </div>
+          <div class="grid grid-cols-[minmax(160px,220px)_1fr_80px] gap-x-4 items-baseline px-4 py-3 bg-(--crit-bg-secondary) max-sm:grid-cols-1 max-sm:gap-y-1">
+            <code class="text-sm font-mono text-(--crit-fg-primary)">OAUTH_CLIENT_SECRET</code>
+            <p class="text-sm text-(--crit-fg-secondary)">Generic OAuth2 client secret</p>
+            <span class="text-xs font-mono text-(--crit-fg-dimmed) sm:text-right">optional</span>
+          </div>
+          <div class="grid grid-cols-[minmax(160px,220px)_1fr_80px] gap-x-4 items-baseline px-4 py-3 bg-(--crit-bg-secondary) max-sm:grid-cols-1 max-sm:gap-y-1">
+            <code class="text-sm font-mono text-(--crit-fg-primary)">OAUTH_BASE_URL</code>
+            <p class="text-sm text-(--crit-fg-secondary)">
+              OIDC discovery base URL, e.g.
+              <code class="text-xs bg-(--crit-bg-tertiary) px-1 rounded">
+                https://accounts.google.com
+              </code>
+            </p>
+            <span class="text-xs font-mono text-(--crit-fg-dimmed) sm:text-right">optional</span>
+          </div>
+        </div>
+      </div>
+
+      <%!-- Network group --%>
+      <div class="border border-(--crit-border) rounded-lg overflow-hidden">
+        <div class="px-4 py-2 bg-(--crit-bg-tertiary) border-b border-(--crit-border)">
+          <span class="text-xs font-mono tracking-widest uppercase text-(--crit-fg-dimmed)">
+            Network
+          </span>
+        </div>
+        <div class="divide-y divide-(--crit-border)">
+          <div class="grid grid-cols-[minmax(160px,220px)_1fr_80px] gap-x-4 items-baseline px-4 py-3 bg-(--crit-bg-secondary) max-sm:grid-cols-1 max-sm:gap-y-1">
+            <div>
+              <code class="text-sm font-mono text-(--crit-fg-primary)">PORT</code>
+              <span class="ml-2 text-xs font-mono text-(--crit-fg-dimmed)">4000</span>
+            </div>
+            <p class="text-sm text-(--crit-fg-secondary)">HTTP port the server listens on</p>
+            <span class="text-xs font-mono text-(--crit-fg-dimmed) sm:text-right">optional</span>
+          </div>
+          <div class="grid grid-cols-[minmax(160px,220px)_1fr_80px] gap-x-4 items-baseline px-4 py-3 bg-(--crit-bg-secondary) max-sm:grid-cols-1 max-sm:gap-y-1">
+            <div>
+              <code class="text-sm font-mono text-(--crit-fg-primary)">PHX_SCHEME</code>
+              <span class="ml-2 text-xs font-mono text-(--crit-fg-dimmed)">https</span>
+            </div>
+            <p class="text-sm text-(--crit-fg-secondary)">URL scheme used in generated links</p>
+            <span class="text-xs font-mono text-(--crit-fg-dimmed) sm:text-right">optional</span>
+          </div>
+          <div class="grid grid-cols-[minmax(160px,220px)_1fr_80px] gap-x-4 items-baseline px-4 py-3 bg-(--crit-bg-secondary) max-sm:grid-cols-1 max-sm:gap-y-1">
+            <div>
+              <code class="text-sm font-mono text-(--crit-fg-primary)">FORCE_SSL</code>
+              <span class="ml-2 text-xs font-mono text-(--crit-fg-dimmed)">false</span>
+            </div>
+            <p class="text-sm text-(--crit-fg-secondary)">
+              Set to <code class="text-xs bg-(--crit-bg-tertiary) px-1 rounded">true</code>
+              to force HTTPS redirects. Not needed when running behind a reverse proxy.
+            </p>
+            <span class="text-xs font-mono text-(--crit-fg-dimmed) sm:text-right">optional</span>
           </div>
         </div>
       </div>
@@ -479,7 +471,7 @@
             <div class="w-2.5 h-2.5 rounded-full bg-(--crit-fg-dimmed) opacity-40"></div>
             <div class="w-2.5 h-2.5 rounded-full bg-(--crit-fg-dimmed) opacity-40"></div>
           </div>
-          <span class="font-mono text-[11px] text-(--crit-fg-muted) ml-2">Terminal</span>
+          <span class="font-mono text-xs text-(--crit-fg-muted) ml-2">Terminal</span>
         </div>
         <div class="bg-(--crit-code-bg) p-5 font-mono text-sm leading-7 text-(--crit-fg-secondary)">
           <div>
@@ -532,7 +524,7 @@
             <div class="w-2.5 h-2.5 rounded-full bg-(--crit-fg-dimmed) opacity-40"></div>
             <div class="w-2.5 h-2.5 rounded-full bg-(--crit-fg-dimmed) opacity-40"></div>
           </div>
-          <span class="font-mono text-[11px] text-(--crit-fg-muted) ml-2">Terminal</span>
+          <span class="font-mono text-xs text-(--crit-fg-muted) ml-2">Terminal</span>
         </div>
         <div class="bg-(--crit-code-bg) p-5 font-mono text-sm leading-7 text-(--crit-fg-secondary)">
           <div>
