@@ -31,14 +31,14 @@
     <%= case @slug do %>
       <% "inline-comments" -> %>
         <div
-          class="rounded-lg border border-(--crit-border) bg-(--crit-bg-secondary) overflow-hidden font-mono text-[13px] leading-7 select-none"
+          class="rounded-lg border border-(--crit-border) bg-(--crit-bg-secondary) overflow-hidden font-mono text-xs leading-7 select-none"
           aria-hidden="true"
         >
           <div class="flex">
             <span class="w-10 text-right pr-3 py-0.5 text-(--crit-fg-dimmed) shrink-0">
               1
             </span>
-            <span class="flex-1 px-3 py-0.5 font-sans font-bold text-[16px] text-(--crit-fg-primary)">
+            <span class="flex-1 px-3 py-0.5 font-sans font-bold text-base text-(--crit-fg-primary)">
               # Implement auth system
             </span>
           </div>
@@ -52,19 +52,19 @@
             <span class="w-10 text-right pr-3 py-0.5 text-(--crit-fg-dimmed) shrink-0">
               3
             </span>
-            <span class="flex-1 px-3 py-0.5 font-sans font-semibold text-[14px] text-(--crit-fg-primary)">
+            <span class="flex-1 px-3 py-0.5 font-sans font-semibold text-sm text-(--crit-fg-primary)">
               ## Backend
             </span>
           </div>
           <div class="flex border-l-[3px] border-(--crit-accent) bg-(--crit-accent-subtle)">
             <span class="w-10 text-right pr-3 py-0.5 text-(--crit-accent) shrink-0">4</span>
-            <span class="flex-1 px-3 py-0.5 font-sans text-[13px] text-(--crit-fg-secondary)">
+            <span class="flex-1 px-3 py-0.5 font-sans text-xs text-(--crit-fg-secondary)">
               Use JWT tokens for sessions.
             </span>
           </div>
           <!-- Comment from first author (blue hue) -->
           <div
-            class="mx-3 mb-1 mt-0.5 border rounded text-[12px] overflow-hidden"
+            class="mx-3 mb-1 mt-0.5 border rounded text-xs overflow-hidden"
             style="border-color: hsl(220 40% 30%); background: hsl(220 25% 14%);"
           >
             <div
@@ -85,7 +85,7 @@
           </div>
           <!-- Comment from second author (green hue) -->
           <div
-            class="mx-3 mb-1 mt-0.5 border rounded text-[12px] overflow-hidden"
+            class="mx-3 mb-1 mt-0.5 border rounded text-xs overflow-hidden"
             style="border-color: hsl(140 40% 30%); background: hsl(140 25% 14%);"
           >
             <div
@@ -101,7 +101,7 @@
             </div>
             <div class="px-3 py-2 font-sans text-(--crit-fg-secondary) leading-relaxed">
               +1 on OAuth2. See the
-              <code class="text-[0.9em] bg-(--crit-bg-tertiary) px-1 py-0.5 rounded text-(--crit-accent)">
+              <code class="text-xs bg-(--crit-bg-tertiary) px-1 py-0.5 rounded text-(--crit-accent)">
                 passport.js
               </code>
               docs for examples.
@@ -111,18 +111,18 @@
             <span class="w-10 text-right pr-3 py-0.5 text-(--crit-fg-dimmed) shrink-0">
               5
             </span>
-            <span class="flex-1 px-3 py-0.5 font-sans text-[13px] text-(--crit-fg-secondary)">
+            <span class="flex-1 px-3 py-0.5 font-sans text-xs text-(--crit-fg-secondary)">
               Rate limit all endpoints.
             </span>
           </div>
           <div class="flex border-l-[3px] border-(--crit-accent) bg-(--crit-accent-subtle)">
             <span class="w-10 text-right pr-3 py-0.5 text-(--crit-accent) shrink-0">6</span>
-            <span class="flex-1 px-3 py-0.5 font-sans text-[13px] text-(--crit-fg-secondary)">
+            <span class="flex-1 px-3 py-0.5 font-sans text-xs text-(--crit-fg-secondary)">
               Store passwords with bcrypt.
             </span>
           </div>
           <div
-            class="mx-3 mb-3 mt-0.5 border rounded text-[12px] overflow-hidden"
+            class="mx-3 mb-3 mt-0.5 border rounded text-xs overflow-hidden"
             style="border-color: hsl(220 40% 30%); background: hsl(220 25% 14%);"
           >
             <div
@@ -138,7 +138,7 @@
             </div>
             <div class="px-3 py-2 font-sans text-(--crit-fg-secondary) leading-relaxed">
               bcrypt is fine but
-              <code class="text-[0.9em] bg-(--crit-bg-tertiary) px-1 py-0.5 rounded text-(--crit-accent)">
+              <code class="text-xs bg-(--crit-bg-tertiary) px-1 py-0.5 rounded text-(--crit-accent)">
                 argon2id
               </code>
               is the <em>current</em>
@@ -160,14 +160,14 @@
               <span class="text-xs text-(--crit-fg-muted)">Side-by-side comparison</span>
             </div>
             <div
-              class="rounded-lg border border-(--crit-border) overflow-hidden text-[12px] font-mono leading-6 select-none"
+              class="rounded-lg border border-(--crit-border) overflow-hidden text-xs font-mono leading-6 select-none"
               aria-hidden="true"
             >
               <div class="grid grid-cols-2">
-                <div class="px-4 py-2 bg-(--crit-bg-tertiary) text-(--crit-fg-muted) border-b border-r border-(--crit-border) font-sans font-semibold text-[11px]">
+                <div class="px-4 py-2 bg-(--crit-bg-tertiary) text-(--crit-fg-muted) border-b border-r border-(--crit-border) font-sans font-semibold text-xs">
                   Previous
                 </div>
-                <div class="px-4 py-2 bg-(--crit-bg-tertiary) text-(--crit-fg-muted) border-b border-(--crit-border) font-sans font-semibold text-[11px]">
+                <div class="px-4 py-2 bg-(--crit-bg-tertiary) text-(--crit-fg-muted) border-b border-(--crit-border) font-sans font-semibold text-xs">
                   Current
                 </div>
               </div>
@@ -206,7 +206,7 @@
               <span class="text-xs text-(--crit-fg-muted)">Inline comparison</span>
             </div>
             <div
-              class="rounded-lg border border-(--crit-border) overflow-hidden text-[12px] font-mono leading-6 select-none"
+              class="rounded-lg border border-(--crit-border) overflow-hidden text-xs font-mono leading-6 select-none"
               aria-hidden="true"
             >
               <div class="px-4 py-1 diff-removed-bg text-(--crit-red) line-through opacity-70">
@@ -229,7 +229,7 @@
         </div>
       <% "ai-review-loop" -> %>
         <div
-          class="rounded-lg border border-(--crit-border) bg-(--crit-code-bg) p-5 text-[13px] font-mono leading-7 text-(--crit-fg-secondary) select-none"
+          class="rounded-lg border border-(--crit-border) bg-(--crit-code-bg) p-5 text-xs font-mono leading-7 text-(--crit-fg-secondary) select-none"
           aria-hidden="true"
         >
           <div><span class="text-(--crit-fg-muted)">$</span> crit</div>
@@ -277,7 +277,7 @@
           class="rounded-lg border border-(--crit-border) bg-(--crit-bg-secondary) p-6 select-none"
           aria-hidden="true"
         >
-          <div class="grid grid-cols-2 gap-x-10 gap-y-3 text-[13px] max-sm:grid-cols-1">
+          <div class="grid grid-cols-2 gap-x-10 gap-y-3 text-xs max-sm:grid-cols-1">
             <div class="flex items-center gap-3">
               <kbd class="crit-kbd">j</kbd><kbd class="crit-kbd">k</kbd>
               <span class="text-(--crit-fg-muted)">navigate lines</span>
@@ -344,7 +344,7 @@
         </div>
       <% "syntax-highlighting" -> %>
         <div
-          class="rounded-lg border border-(--crit-border) bg-(--crit-code-bg) p-5 text-[13px] font-mono leading-7 overflow-hidden select-none"
+          class="rounded-lg border border-(--crit-border) bg-(--crit-code-bg) p-5 text-xs font-mono leading-7 overflow-hidden select-none"
           aria-hidden="true"
         >
           <div>
@@ -381,7 +381,7 @@
           class="rounded-lg border border-(--crit-border) bg-(--crit-bg-primary) p-8 flex items-center justify-center select-none"
           aria-hidden="true"
         >
-          <div class="flex items-center gap-4 text-[12px] font-mono">
+          <div class="flex items-center gap-4 text-xs font-mono">
             <div class="border-2 border-(--crit-accent) rounded-lg px-5 py-3 text-(--crit-accent) font-semibold">
               Auth
             </div>

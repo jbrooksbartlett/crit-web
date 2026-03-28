@@ -39,7 +39,7 @@
           <h2 class="text-lg font-semibold tracking-tight">Open a file for review</h2>
           <p class="text-sm text-(--crit-fg-muted) mt-0.5">
             Pass any file, or run
-            <code class="text-[0.9em] bg-(--crit-bg-tertiary) px-1 py-0.5 rounded">crit</code>
+            <code class="text-xs bg-(--crit-bg-tertiary) px-1 py-0.5 rounded">crit</code>
             with no args to auto-detect changes in your repo.
           </p>
         </div>
@@ -53,7 +53,7 @@
             <div class="w-2.5 h-2.5 rounded-full bg-(--crit-fg-dimmed) opacity-40"></div>
             <div class="w-2.5 h-2.5 rounded-full bg-(--crit-fg-dimmed) opacity-40"></div>
           </div>
-          <span class="font-mono text-[11px] text-(--crit-fg-muted) ml-2">Terminal</span>
+          <span class="font-mono text-xs text-(--crit-fg-muted) ml-2">Terminal</span>
         </div>
         <%!-- Terminal body --%>
         <div class="bg-(--crit-code-bg) p-5 font-mono text-sm leading-7 text-(--crit-fg-secondary)">
@@ -105,25 +105,25 @@
       <div class="border border-(--crit-border) rounded-lg overflow-hidden bg-(--crit-bg-secondary)">
         <%!-- File header bar --%>
         <div class="flex items-center gap-2 px-4 py-2.5 border-b border-(--crit-border) bg-(--crit-bg-tertiary)">
-          <span class="font-mono text-[11px] font-semibold text-(--crit-fg-secondary)">
+          <span class="font-mono text-xs font-semibold text-(--crit-fg-secondary)">
             Crit
           </span>
-          <span class="text-(--crit-fg-dimmed) text-[10px]">/</span>
-          <span class="font-mono text-[11px] text-(--crit-fg-muted) bg-(--crit-bg-secondary) px-2 py-0.5 rounded">
+          <span class="text-(--crit-fg-dimmed) text-xs">/</span>
+          <span class="font-mono text-xs text-(--crit-fg-muted) bg-(--crit-bg-secondary) px-2 py-0.5 rounded">
             plan.md
           </span>
           <div class="ml-auto flex items-center gap-3">
-            <span class="font-mono text-[11px] text-(--crit-fg-muted)">
+            <span class="font-mono text-xs text-(--crit-fg-muted)">
               <strong class="text-(--crit-accent)">1</strong> comment
             </span>
           </div>
         </div>
 
         <%!-- Document lines --%>
-        <div class="font-mono text-[12px] leading-6 select-none">
+        <div class="font-mono text-xs leading-6 select-none">
           <div class="flex border-l-[3px] border-transparent">
             <div class="w-[42px] shrink-0 text-right pr-3 py-0.5 text-(--crit-fg-dimmed)">1</div>
-            <div class="flex-1 px-3 py-0.5 font-sans font-bold text-[14px] text-(--crit-fg-primary)">
+            <div class="flex-1 px-3 py-0.5 font-sans font-bold text-sm text-(--crit-fg-primary)">
               # Add rate limiting
             </div>
           </div>
@@ -133,18 +133,18 @@
           </div>
           <div class="flex border-l-[3px] border-(--crit-accent) bg-(--crit-accent-subtle)">
             <div class="w-[42px] shrink-0 text-right pr-3 py-0.5 text-(--crit-accent)">3</div>
-            <div class="flex-1 px-3 py-0.5 font-sans text-[12px] text-(--crit-fg-secondary)">
+            <div class="flex-1 px-3 py-0.5 font-sans text-xs text-(--crit-fg-secondary)">
               Apply a global rate limit of 100 req/s per IP.
             </div>
           </div>
           <div class="flex border-l-[3px] border-(--crit-accent) bg-(--crit-accent-subtle)">
             <div class="w-[42px] shrink-0 text-right pr-3 py-0.5 text-(--crit-accent)">4</div>
-            <div class="flex-1 px-3 py-0.5 font-sans text-[12px] text-(--crit-fg-secondary)">
+            <div class="flex-1 px-3 py-0.5 font-sans text-xs text-(--crit-fg-secondary)">
               Use a fixed window counter stored in Redis.
             </div>
           </div>
           <%!-- Comment --%>
-          <div class="mx-3 mb-1 mt-0.5 border border-(--crit-border-comment) rounded text-[11px] overflow-hidden bg-(--crit-comment-bg)">
+          <div class="mx-3 mb-1 mt-0.5 border border-(--crit-border-comment) rounded text-xs overflow-hidden bg-(--crit-comment-bg)">
             <div class="px-3 py-1.5 border-b border-(--crit-border) flex items-center gap-2 bg-(--crit-accent-subtle)">
               <span class="font-sans font-semibold text-(--crit-accent)">You</span>
               <span class="text-(--crit-fg-dimmed)">&middot;</span>
@@ -156,13 +156,13 @@
           </div>
           <div class="flex border-l-[3px] border-transparent">
             <div class="w-[42px] shrink-0 text-right pr-3 py-0.5 text-(--crit-fg-dimmed)">5</div>
-            <div class="flex-1 px-3 py-0.5 font-sans text-[12px] text-(--crit-fg-secondary)">
+            <div class="flex-1 px-3 py-0.5 font-sans text-xs text-(--crit-fg-secondary)">
               Return 429 with a Retry-After header.
             </div>
           </div>
           <div class="flex border-l-[3px] border-transparent">
             <div class="w-[42px] shrink-0 text-right pr-3 py-0.5 text-(--crit-fg-dimmed)">6</div>
-            <div class="flex-1 px-3 py-0.5 font-sans text-[12px] text-(--crit-fg-secondary)">
+            <div class="flex-1 px-3 py-0.5 font-sans text-xs text-(--crit-fg-secondary)">
               Log blocked requests to stdout.
             </div>
           </div>
@@ -171,22 +171,22 @@
 
       <div class="flex flex-wrap gap-x-6 gap-y-2 mt-4 text-sm text-(--crit-fg-muted)">
         <span class="flex items-center gap-1.5">
-          <kbd class="inline-flex items-center justify-center font-mono text-[10px] min-w-[20px] h-5 px-1.5 rounded border border-(--crit-border) bg-(--crit-bg-tertiary) text-(--crit-fg-secondary)">
+          <kbd class="inline-flex items-center justify-center font-mono text-xs min-w-[20px] h-5 px-1.5 rounded border border-(--crit-border) bg-(--crit-bg-tertiary) text-(--crit-fg-secondary)">
             j
           </kbd>
-          <kbd class="inline-flex items-center justify-center font-mono text-[10px] min-w-[20px] h-5 px-1.5 rounded border border-(--crit-border) bg-(--crit-bg-tertiary) text-(--crit-fg-secondary)">
+          <kbd class="inline-flex items-center justify-center font-mono text-xs min-w-[20px] h-5 px-1.5 rounded border border-(--crit-border) bg-(--crit-bg-tertiary) text-(--crit-fg-secondary)">
             k
           </kbd>
           navigate
         </span>
         <span class="flex items-center gap-1.5">
-          <kbd class="inline-flex items-center justify-center font-mono text-[10px] min-w-[20px] h-5 px-1.5 rounded border border-(--crit-border) bg-(--crit-bg-tertiary) text-(--crit-fg-secondary)">
+          <kbd class="inline-flex items-center justify-center font-mono text-xs min-w-[20px] h-5 px-1.5 rounded border border-(--crit-border) bg-(--crit-bg-tertiary) text-(--crit-fg-secondary)">
             c
           </kbd>
           comment
         </span>
         <span class="flex items-center gap-1.5">
-          <kbd class="inline-flex items-center justify-center font-mono text-[10px] min-w-[20px] h-5 px-1.5 rounded border border-(--crit-border) bg-(--crit-bg-tertiary) text-(--crit-fg-secondary)">
+          <kbd class="inline-flex items-center justify-center font-mono text-xs min-w-[20px] h-5 px-1.5 rounded border border-(--crit-border) bg-(--crit-bg-tertiary) text-(--crit-fg-secondary)">
             ?
           </kbd>
           all shortcuts
@@ -215,7 +215,7 @@
             <div class="w-2.5 h-2.5 rounded-full bg-(--crit-fg-dimmed) opacity-40"></div>
             <div class="w-2.5 h-2.5 rounded-full bg-(--crit-fg-dimmed) opacity-40"></div>
           </div>
-          <span class="font-mono text-[11px] text-(--crit-fg-muted) ml-2">Crit</span>
+          <span class="font-mono text-xs text-(--crit-fg-muted) ml-2">Crit</span>
         </div>
         <div class="bg-(--crit-code-bg) p-5 font-mono text-sm leading-7 text-(--crit-fg-secondary)">
           <div>
@@ -245,8 +245,8 @@
       </div>
 
       <p class="text-sm text-(--crit-fg-muted) mt-4 leading-relaxed">
-        The agent reads <code class="text-[0.9em] bg-(--crit-bg-tertiary) px-1 py-0.5 rounded">.crit.json</code>, addresses your comments, and runs
-        <code class="text-[0.9em] bg-(--crit-bg-tertiary) px-1 py-0.5 rounded">crit go</code>
+        The agent reads <code class="text-xs bg-(--crit-bg-tertiary) px-1 py-0.5 rounded">.crit.json</code>, addresses your comments, and runs
+        <code class="text-xs bg-(--crit-bg-tertiary) px-1 py-0.5 rounded">crit go</code>
         when done. Crit reloads with a diff of what changed. Repeat until you're satisfied.
       </p>
       <p class="text-sm text-(--crit-fg-muted) mt-2 leading-relaxed">
@@ -279,7 +279,7 @@
             <div class="w-2.5 h-2.5 rounded-full bg-(--crit-fg-dimmed) opacity-40"></div>
             <div class="w-2.5 h-2.5 rounded-full bg-(--crit-fg-dimmed) opacity-40"></div>
           </div>
-          <span class="font-mono text-[11px] text-(--crit-fg-muted) ml-2">Terminal</span>
+          <span class="font-mono text-xs text-(--crit-fg-muted) ml-2">Terminal</span>
         </div>
         <div class="bg-(--crit-code-bg) p-5 font-mono text-sm leading-7 text-(--crit-fg-secondary)">
           <div>
@@ -300,7 +300,7 @@
             <div class="w-2.5 h-2.5 rounded-full bg-(--crit-fg-dimmed) opacity-40"></div>
             <div class="w-2.5 h-2.5 rounded-full bg-(--crit-fg-dimmed) opacity-40"></div>
           </div>
-          <span class="font-mono text-[11px] text-(--crit-fg-muted) ml-2">Claude Code</span>
+          <span class="font-mono text-xs text-(--crit-fg-muted) ml-2">Claude Code</span>
         </div>
         <div class="bg-(--crit-code-bg) p-5 font-mono text-sm leading-7 text-(--crit-fg-secondary)">
           <div>
