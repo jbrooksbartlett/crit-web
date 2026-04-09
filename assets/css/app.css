@@ -1412,13 +1412,17 @@ body.dragging .line-block.selected .line-gutter .line-add { display: flex; }
 /* Comments panel */
 .comments-panel {
   width: 480px;
-  height: calc(100vh - var(--crit-header-height, 53px));
+  flex-shrink: 0;
   background: var(--crit-bg-secondary);
   border-left: 1px solid var(--crit-border);
+  position: sticky;
+  top: var(--crit-header-height, 53px);
+  height: calc(100vh - var(--crit-header-height, 53px));
+  overflow-y: hidden;
+  overflow-x: hidden;
   z-index: 90;
   display: none;
   flex-direction: column;
-  overflow: hidden;
 }
 
 .comments-panel.comments-panel-open {
