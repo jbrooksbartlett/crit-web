@@ -621,15 +621,13 @@
             </p>
           </div>
           <p class="relative font-mono text-xs text-(--crit-fg-muted)">
-            &mdash; {testimonial.author}, {testimonial.role}
+            &mdash;
             <a
-              href={"https://x.com/#{testimonial.handle}"}
-              class="text-(--crit-fg-dimmed) hover:text-(--crit-accent) transition-colors ml-1"
+              href={testimonial.link}
+              class="text-(--crit-fg-dimmed) hover:text-(--crit-accent) transition-colors"
               target="_blank"
               rel="noopener noreferrer"
-            >
-              @{testimonial.handle}
-            </a>
+            >{testimonial.author}</a>, {testimonial.role}
           </p>
         </div>
       </div>

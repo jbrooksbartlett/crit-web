@@ -147,18 +147,39 @@ defmodule CritWeb.PageController do
       ],
       author: "Omer",
       role: "Principal Engineer",
-      handle: "omervk"
+      link: "https://x.com/omervk"
+    },
+    %{
+      highlight: "Review and iterate on plans, down to specific sections.",
+      body: [
+        "I use Crit daily to tighten feedback loops with my coding agent. Being able to review and iterate on plans, down to specific sections, or entire spec folders has made AI-assisted development feel fast and controlled.",
+        "The integration into my Claude Code setup is seamless and just clicks."
+      ],
+      author: "Ullrich Schäfer",
+      role: "Engineering Manager @ Pitch",
+      link: "https://www.linkedin.com/in/ullrichschaefer/"
     },
     %{
       highlight: "It's like a pull request review but for your plan.",
       body: [
         "I've been using crit to review plans for some times. I use claude code in the command line without an IDE, so being to quickly check the plan with rendering is super nice.",
         "The system allowing you to add comments is the killer feature: it's like a pull request review but for your plan.",
-        "On long, complex plans I used to ask claude things like \"on point 3., we should do X, drop point 7., ...\". Using comments makes it more straightforward and easy to review later."
+        "On long, complex plans I used to ask Claude things like \"on point 3., we should do X, drop point 7., ...\". Using comments makes it more straightforward and easy to review later."
       ],
       author: "Vincent",
       role: "Senior Software Engineer",
-      handle: "vineus"
+      link: "https://x.com/vineus"
+    },
+    %{
+      highlight: "Genuinely game changing for agentic workflows.",
+      body: [
+        "Crit feels genuinely game changing for agentic workflows. It just works.",
+        "It fits into my setup with basically zero friction, and makes reviewing plans feel fast, natural, and way less annoying than pushing code to GitHub just to leave feedback. It's so easy to use I use it to give feedback to my agents every iteration of the process.",
+        "The collaborative features are still a little early, but they're already kind of amazing. This is the tool that makes me surprised that the major AI labs aren't building this into their harnesses themselves."
+      ],
+      author: "@vereisyaps",
+      role: "Tech Lead",
+      link: "https://x.com/vereisyaps"
     }
   ]
 
