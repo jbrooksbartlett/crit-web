@@ -1,6 +1,8 @@
-# Copy build caches from source branch worktree
 [pre-start]
-copy = "wt step copy-ignored --from {{ base }}"
-
-[post-start]
 mise-trust = "mise trust ."
+direnv-allow = "direnv allow"
+
+# Copy build caches from source branch worktree
+[post-start]
+copy = "wt step copy-ignored"
+
