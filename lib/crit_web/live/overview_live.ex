@@ -3,8 +3,8 @@ defmodule CritWeb.OverviewLive do
 
   alias Crit.{Reviews, Statistics}
 
-  import CritWeb.Helpers, only: [time_ago: 1, split_path: 1]
   import CritWeb.Components.ReviewSnippet
+  import CritWeb.Components.ReviewListingHeader
 
   @impl true
   def mount(_params, _session, socket) do
@@ -35,36 +35,6 @@ defmodule CritWeb.OverviewLive do
       end
 
     {:ok, socket, layout: false}
-  end
-
-  @impl true
-  def handle_event("delete_review", %{"id" => id}, socket) do
-    %{oauth_configured: oauth_configured, current_user: current_user} = socket.assigns
-
-    opts =
-      if oauth_configured && current_user do
-        [owner_id: current_user.id]
-      else
-        []
-      end
-
-    case Reviews.delete_review(id, opts) do
-      :ok ->
-        reviews = Reviews.list_reviews_with_counts()
-        stats = Statistics.dashboard_stats()
-
-        {:noreply,
-         socket
-         |> stream(:reviews, reviews, reset: true)
-         |> assign(:review_count, length(reviews))
-         |> assign(:stats, stats)}
-
-      {:error, :unauthorized} ->
-        {:noreply, put_flash(socket, :error, "You can only delete your own reviews.")}
-
-      {:error, _} ->
-        {:noreply, put_flash(socket, :error, "Failed to delete review.")}
-    end
   end
 
   defp format_bytes(bytes) when bytes < 1024, do: "#{bytes} B"

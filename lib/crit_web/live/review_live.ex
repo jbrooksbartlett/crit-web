@@ -128,6 +128,28 @@ defmodule CritWeb.ReviewLive do
     end
   end
 
+  def handle_event("delete_review", _params, socket) do
+    %{review: review, current_user: current_user} = socket.assigns
+
+    if current_user && (is_nil(review.user_id) || review.user_id == current_user.id) do
+      case Reviews.delete_review(review.id, owner_id: current_user.id) do
+        :ok ->
+          {:noreply,
+           socket
+           |> put_flash(:info, "Review deleted.")
+           |> redirect(to: ~p"/dashboard")}
+
+        {:error, :unauthorized} ->
+          {:noreply, put_flash(socket, :error, "You can only delete your own reviews.")}
+
+        {:error, _} ->
+          {:noreply, put_flash(socket, :error, "Failed to delete review.")}
+      end
+    else
+      {:noreply, put_flash(socket, :error, "You can only delete your own reviews.")}
+    end
+  end
+
   def handle_event("set_prompt_mode", %{"mode" => mode}, socket)
       when mode in ["local", "full_export"] do
     {:noreply, assign(socket, :prompt_mode, mode)}
